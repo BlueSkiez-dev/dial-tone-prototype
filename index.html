@@ -341,7 +341,7 @@ const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const MODES = {
   room:  { proto: 'AUDIBLE_FASTEST',    view: [0, 8000],      band: [1875, 6375],   label: 'Room · 1.9–6.4 kHz', note: 'Loudest and fastest. Hold the phones within a few meters.' },
-  call:  { proto: 'DT_FASTEST',         view: [0, 8000],      band: [1100, 2700],   label: 'Call · 1.1–2.7 kHz', note: 'Fits through a phone call or a voice note. Hold the phone to the call’s mic.' },
+  call:  { proto: 'DT_FASTEST',         view: [0, 8000],      band: [1100, 2600],   label: 'Call · 1.1–2.6 kHz', note: 'Fits through a phone call or a voice note. Hold the phone to the call’s mic.' },
   quiet: { proto: 'ULTRASOUND_FASTEST', view: [12000, 20000], band: [15000, 19500], label: 'Quiet · 15–19.5 kHz', note: 'Near-silent, same room only. Some older phones can’t hear it.' },
 };
 const ORDER = ['room', 'call', 'quiet'];
