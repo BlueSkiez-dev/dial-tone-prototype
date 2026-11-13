@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dial Tone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* GHOST IN THE LINE — v2 "hardware grade"
+   The app is a physical object: a frosted, see-through shell (the ghost) with the modem's
+   circuit board visible through it, a screwed-down faceplate, and real-feeling parts:
+   domed LED lenses, a CRT scope behind glass, a knurled slide switch, a keycap, a guarded SOS,
+   and a thermal printer that prints the Tape. Halloween lives only in the ghost moment. */
+:root {
+  /* studio */
+  --bg-hi: #fbfbfa; --bg: #ededeb; --bg-lo: #e0e0dd;
+  /* shell (frosted clear plastic) + circuit board seen through it */
+  --shell: #e2e3e5; --pcb-op: .95;
+  /* faceplate */
+  --plate-hi: #d6d7d8; --plate: #c4c5c7; --plate-lo: #aeafb2;
+  --emboss: #a3a5a9;
+  /* raised caps (slide thumb, latch buttons) */
+  --cap-hi: #fdfdfd; --cap: #e7e8ea; --cap-lo: #d0d1d4;
+  /* print */
+  --ink: #1f2124; --ink-2: #44474c;
+  /* glass + light */
+  --glass: #0d0f0e; --phosphor: #7dffb2; --signal: #19c46f;
+  --green: #5cff7a; --amber: #ffb21a; --sos: #d9301f;
+  --paper: #fbfaf6;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+  --f-label: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+.device[data-case="beige"] {
+  --shell: #e2dac8; --pcb-op: .14;
+  --plate-hi: #eee7d7; --plate: #e1d8c3; --plate-lo: #cbbfa5; --emboss: #c7bb9f;
+  --cap-hi: #fcfaf3; --cap: #ede6d5; --cap-lo: #d9cfb8;
+  --ink: #1d1b16; --ink-2: #554f41;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: radial-gradient(120% 90% at 50% 0%, var(--bg-hi) 0%, var(--bg) 55%, var(--bg-lo) 100%) fixed var(--bg);
+  color: var(--ink); font: 15px/1.5 var(--f-body);
+  min-height: 100vh; display: flex; justify-content: center; align-items: flex-start;
+  padding: max(16px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  -webkit-font-smoothing: antialiased;
+}
+@media (min-width: 640px) { body { padding-top: 48px; } }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #2d7dff; outline-offset: 3px; }
+.silk { font: 600 11px/1 var(--f-label); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.silk-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 0 4px; min-height: 22px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ================= shell ================= */
+.device {
+  position: relative; isolation: isolate; width: 100%; max-width: 430px;
+  border-radius: 50px; padding: 17px 15px; background: var(--shell);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 60px 80px -50px rgba(28,30,34,.5), 0 24px 34px -22px rgba(28,30,34,.32), 0 3px 6px rgba(28,30,34,.08);
+  --lx: 28%; --ly: 0%;
+}
+.pcb { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; border-radius: inherit; opacity: var(--pcb-op); filter: blur(.5px); pointer-events: none; }
+.frost {
+  position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background:
+    var(--grain),
+    radial-gradient(70% 45% at var(--lx) var(--ly), rgba(255,255,255,.55), transparent 70%),
+    linear-gradient(160deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,.12) 45%, rgba(255,255,255,.3) 100%);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.95), inset 0 0 0 1px rgba(255,255,255,.55), inset 0 0 22px rgba(255,255,255,.55), inset 0 -4px 6px rgba(0,0,0,.06);
+}
+
+/* ================= faceplate ================= */
+.plate {
+  position: relative; border-radius: 35px; padding: 26px 18px 28px; display: grid; gap: 20px;
+  background: var(--grain), radial-gradient(140% 60% at 50% -8%, var(--plate-hi) 0%, var(--plate) 55%, var(--plate-lo) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1px 0 rgba(0,0,0,.14), 0 0 0 1px rgba(0,0,0,.06), 0 1px 1px rgba(0,0,0,.2), 0 8px 16px -8px rgba(0,0,0,.32);
+}
+.plate > :not(.trace):not(.screw) { position: relative; z-index: 1; }
+.screw {
+  position: absolute; z-index: 2; width: 13px; height: 13px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #fff 0%, #dcdde0 35%, #9b9da2 100%);
+  box-shadow: 0 0 0 1.5px rgba(0,0,0,.16), 0 0 0 3px rgba(255,255,255,.5), inset 0 -1px 1px rgba(0,0,0,.35), 0 1px 1px rgba(0,0,0,.25);
+  transform: rotate(var(--r));
+}
+.screw::before, .screw::after { content: ""; position: absolute; left: 50%; top: 50%; width: 7px; height: 1.6px; margin: -.8px 0 0 -3.5px; border-radius: 1px; background: #565a5f; box-shadow: 0 .6px 0 rgba(255,255,255,.7); }
+.screw::after { transform: rotate(90deg); }
+.screw.tl { top: 8px; left: 8px; --r: 12deg; } .screw.tr { top: 8px; right: 8px; --r: 41deg; }
+.screw.bl { bottom: 8px; left: 8px; --r: 67deg; } .screw.br { bottom: 8px; right: 8px; --r: 24deg; }
+
+/* etched trace that carries the signal */
+.trace { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; overflow: visible; pointer-events: none; }
+.trace .etch { fill: none; stroke: rgba(255,255,255,.6); stroke-width: 1.7; stroke-linejoin: round; filter: drop-shadow(0 -1px 0 rgba(0,0,0,.22)); }
+.trace .via { fill: none; stroke: rgba(255,255,255,.65); stroke-width: 1.5; filter: drop-shadow(0 -1px 0 rgba(0,0,0,.22)); }
+.trace .sig { fill: none; stroke: var(--signal); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 9 200; stroke-dashoffset: 9; opacity: 0; filter: drop-shadow(0 0 3px var(--phosphor)); transition: opacity .3s; }
+.trace.up .sig { opacity: 1; animation: flow 1.1s linear infinite reverse; }
+.trace.down .sig { opacity: 1; animation: flow 1.1s linear infinite; }
+@keyframes flow { from { stroke-dashoffset: 9; } to { stroke-dashoffset: -100; } }
+
+/* ================= header ================= */
+.hdr { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; }
+.vent { display: grid; gap: 4px; }
+.vent i { display: block; width: 22px; height: 3.5px; border-radius: 2px; background: #55585d; box-shadow: inset 0 1px 1.5px rgba(0,0,0,.7), 0 1px 0 rgba(255,255,255,.65); }
+.mark { margin: 0; font: 700 32px/.9 var(--f-label); letter-spacing: .1em; text-transform: uppercase; color: var(--emboss); text-shadow: 0 1px 0 rgba(255,255,255,.85), 0 -1px 0 rgba(0,0,0,.3); }
+.tag { margin: 6px 0 0; font: 500 12px/1.3 var(--f-body); color: var(--ink-2); }
+.power { display: grid; justify-items: center; gap: 6px; }
+.rocker { width: 40px; height: 54px; padding: 4px; border: 0; border-radius: 10px; background: #18191b; box-shadow: inset 0 2px 4px rgba(0,0,0,.8), 0 0 0 1px rgba(0,0,0,.25), 0 1px 0 1.5px rgba(255,255,255,.6); }
+.rk { display: block; height: 100%; position: relative; border-radius: 7px; background: linear-gradient(180deg, #45484c 0%, #2c2e31 47%, #141516 53%, #222427 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); transition: background .12s; }
+.rk::before, .rk::after { position: absolute; left: 0; right: 0; text-align: center; font: 700 11px/1 var(--f-label); color: #8c9095; }
+.rk::before { content: "I"; top: 6px; } .rk::after { content: "O"; bottom: 6px; color: #6d7176; }
+.rocker[aria-pressed="true"] .rk { background: linear-gradient(180deg, #111213 0%, #1c1e20 47%, #33363a 53%, #474a4e 100%); box-shadow: inset 0 2px 3px rgba(0,0,0,.6); }
+.rocker[aria-pressed="true"] .rk::before { color: var(--green); text-shadow: 0 0 6px var(--green), 0 0 12px var(--green); }
+
+/* ================= status window ================= */
+.glass { position: relative; border-radius: 16px; background: radial-gradient(130% 110% at 25% 0%, #1e2120 0%, var(--glass) 70%); box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 1px 0 1.5px rgba(255,255,255,.6), inset 0 2px 7px rgba(0,0,0,.85); }
+.glass::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(172deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.035) 36%, transparent 37%); }
+.status { padding: 14px 14px 12px; }
+.leds { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }
+.led { all: unset; display: grid; justify-items: center; gap: 8px; padding: 4px 0; border-radius: 8px; cursor: help; }
+.led:focus-visible { outline: 2px solid #2d7dff; }
+.lens { position: relative; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle, #2a2c29 0 55%, #171816 100%); box-shadow: 0 0 0 1.5px #040504, 0 1px 0 2px rgba(255,255,255,.07), inset 0 1px 2px rgba(0,0,0,.8); transition: background .08s, box-shadow .08s; }
+.lens::after { content: ""; position: absolute; left: 2.5px; top: 2px; width: 4.5px; height: 3px; border-radius: 50%; background: rgba(255,255,255,.4); }
+.led b { font: 600 11px/1 var(--f-label); letter-spacing: .18em; color: #8e938e; transition: color .08s; }
+.led.on .lens { background: radial-gradient(circle at 50% 55%, #fff 0 14%, var(--c) 40%, color-mix(in srgb, var(--c) 50%, #000) 100%); box-shadow: 0 0 0 1.5px #040504, 0 0 10px 1px var(--c), 0 0 24px color-mix(in srgb, var(--c) 45%, transparent); }
+.led.on b { color: #eef2ec; }
+.led.g { --c: var(--green); } .led.a { --c: var(--amber); }
+.vfd { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.07); font: 500 12px/1.35 var(--f-data); min-height: 36px; }
+.vfd .code { color: var(--phosphor); font-weight: 600; letter-spacing: .12em; white-space: nowrap; text-shadow: 0 0 8px rgba(125,255,178,.65); }
+.vfd .hint { color: #a3a9a3; font-size: 11.5px; text-align: right; }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 14px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,.12); font: 12px var(--f-body); color: #c3c8c2; }
+.legend b { font: 600 12px var(--f-label); letter-spacing: .14em; color: #eef2ec; margin-right: 6px; }
+
+/* ================= scope ================= */
+.lip { border-radius: 20px; padding: 7px; background: linear-gradient(180deg, var(--plate-lo), var(--plate-hi)); box-shadow: inset 0 2px 3px rgba(0,0,0,.28), inset 0 0 0 1px rgba(0,0,0,.06), 0 1px 0 rgba(255,255,255,.75); }
+.screen { position: relative; border-radius: 14px; overflow: hidden; background: #060807; box-shadow: 0 0 0 1px #000, inset 0 0 40px rgba(0,0,0,.9); }
+.screen canvas { display: block; width: 100%; height: 184px; transform-origin: center; }
+.screen::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.6) 100%), repeating-linear-gradient(180deg, rgba(255,255,255,.028) 0 1px, transparent 1px 3px); }
+.screen::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit; background: radial-gradient(90% 55% at var(--lx) -10%, rgba(255,255,255,.16), transparent 60%); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+.screen .axis { position: absolute; z-index: 2; left: 9px; top: 8px; bottom: 8px; display: flex; flex-direction: column; justify-content: space-between; font: 10px var(--f-data); color: #55735f; pointer-events: none; }
+.screen .band { position: absolute; z-index: 2; right: 10px; top: 8px; font: 600 11px var(--f-label); letter-spacing: .16em; color: #6b8d77; text-transform: uppercase; pointer-events: none; }
+.screen .ghost { position: absolute; z-index: 2; inset: auto 12px 12px 42px; font: 600 15px/1.35 var(--f-data); color: var(--phosphor); text-shadow: 0 0 10px var(--phosphor), 0 0 2px #fff; opacity: 0; transition: opacity .4s; pointer-events: none; word-break: break-word; }
+.screen .ghost.show { opacity: 1; }
+.screen.boot canvas { animation: crt .95s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes crt { 0% { transform: scale(1, .006); filter: brightness(5); } 35% { transform: scale(1, .006); filter: brightness(5); } 75% { transform: scale(1, 1); filter: brightness(1.8); } 100% { transform: none; filter: none; } }
+
+/* ================= slide switch ================= */
+.slider { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); padding: 5px; border-radius: 15px; background: linear-gradient(180deg, var(--plate-lo), var(--plate)); box-shadow: inset 0 2px 5px rgba(0,0,0,.3), inset 0 0 0 1px rgba(0,0,0,.08), 0 1px 0 rgba(255,255,255,.75); }
+.thumb { position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / 3); border-radius: 11px; background: linear-gradient(180deg, var(--cap-hi), var(--cap) 60%, var(--cap-lo)); box-shadow: inset 0 1px 0 #fff, inset 0 -2px 0 rgba(0,0,0,.08), 0 1px 1px rgba(0,0,0,.28), 0 5px 9px -3px rgba(0,0,0,.32); transition: transform .42s cubic-bezier(.3,1.35,.5,1); }
+.thumb::before { content: ""; position: absolute; left: 50%; top: 7px; width: 26px; height: 5px; margin-left: -13px; background: repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 1px, rgba(255,255,255,.9) 1px 2px, transparent 2px 4px); border-radius: 1px; }
+.slider button { position: relative; z-index: 1; border: 0; background: transparent; border-radius: 11px; padding: 17px 4px 9px; display: grid; gap: 1px; justify-items: center; }
+.slider button b { font: 700 17px/1.1 var(--f-label); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); transition: color .2s; }
+.slider button span { font: 11px/1.3 var(--f-body); color: var(--ink-2); }
+.slider button[aria-checked="true"] b { color: var(--ink); }
+.mode-note { margin: 8px 4px 0; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+
+/* ================= compose ================= */
+.compose { display: grid; gap: 8px; }
+.well { border-radius: 15px; background: var(--grain), linear-gradient(180deg, #efefed, #fafaf8 30%); box-shadow: inset 0 2px 4px rgba(0,0,0,.2), inset 0 0 0 1px rgba(0,0,0,.08), 0 1px 0 rgba(255,255,255,.75); }
+.well textarea { display: block; width: 100%; border: 0; background: transparent; resize: none; padding: 14px 14px 6px; min-height: 80px; font: 17px/1.4 var(--f-body); color: var(--ink); }
+.well textarea:focus { outline: none; }
+.well:focus-within { box-shadow: inset 0 2px 4px rgba(0,0,0,.2), 0 0 0 2px #2d7dff, 0 1px 0 rgba(255,255,255,.75); }
+.meter { display: flex; align-items: center; gap: 12px; padding: 4px 14px 12px; font: 500 12px var(--f-data); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.bar { flex: 1; display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; }
+.bar i { height: 6px; border-radius: 1px; background: rgba(0,0,0,.09); transition: background .12s; }
+.bar i.on { background: #1f9d55; } .bar i.warn { background: #df9410; } .bar i.over { background: var(--sos); }
+#bytes.over { color: var(--sos); }
+.actions { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; margin-top: 6px; }
+.key { position: relative; overflow: hidden; border: 0; border-radius: 15px; min-height: 72px; padding: 12px 16px 16px; display: grid; place-content: center; justify-items: center; gap: 2px; color: #eef0ee; background: linear-gradient(180deg, #3b3e42 0%, #2a2c30 45%, #1e2023 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -2px 0 rgba(0,0,0,.4), 0 0 0 1px #0a0b0c, 0 4px 0 #0a0b0c, 0 12px 20px -8px rgba(0,0,0,.55); transition: transform .06s, box-shadow .06s; }
+.key::before { content: ""; position: absolute; inset: 5px; border-radius: 11px; pointer-events: none; background: radial-gradient(80% 60% at 50% 0%, rgba(255,255,255,.09), transparent 70%); }
+.key:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 -2px 0 rgba(0,0,0,.4), 0 0 0 1px #0a0b0c, 0 1px 0 #0a0b0c, 0 4px 8px -4px rgba(0,0,0,.55); }
+.key .kl { font: 700 20px/1 var(--f-label); letter-spacing: .22em; text-transform: uppercase; padding-left: .22em; }
+.key small { font: 500 11px var(--f-data); letter-spacing: .06em; color: #9ea3a8; }
+.key:disabled { cursor: not-allowed; } .key:disabled .kl, .key:disabled small { opacity: .4; }
+.key .strip { position: absolute; left: 16px; right: 16px; bottom: 8px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.07); overflow: hidden; }
+.key .prog { position: absolute; inset: 0; background: var(--phosphor); box-shadow: 0 0 8px var(--phosphor); transform-origin: left; transform: scaleX(0); }
+.sos-wrap { display: grid; justify-items: center; gap: 6px; }
+.sos { position: relative; width: 78px; height: 78px; padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle, var(--plate-lo) 0 62%, var(--plate) 100%); box-shadow: inset 0 2px 5px rgba(0,0,0,.38), 0 1px 0 rgba(255,255,255,.75); touch-action: none; user-select: none; -webkit-user-select: none; }
+.sos .ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.sos .ring circle { fill: none; stroke-width: 3.5; }
+.sos .ring .track { stroke: rgba(0,0,0,.1); }
+.sos .ring .fill { stroke: var(--sos); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; filter: drop-shadow(0 0 3px rgba(217,48,31,.6)); }
+.sos .cap { position: absolute; inset: 13px; border-radius: 50%; display: grid; place-items: center; font: 700 16px/1 var(--f-label); letter-spacing: .14em; padding-left: .14em; color: #fff; text-shadow: 0 -1px 0 rgba(0,0,0,.35); background: radial-gradient(circle at 40% 28%, #ff7562 0%, var(--sos) 45%, #9e1e0e 100%); box-shadow: inset 0 2px 1px rgba(255,255,255,.35), inset 0 -3px 5px rgba(0,0,0,.35), 0 3px 0 #74160a, 0 7px 10px -4px rgba(0,0,0,.5); transition: transform .08s, box-shadow .08s; }
+.sos.holding .cap { transform: translateY(2px); box-shadow: inset 0 2px 1px rgba(255,255,255,.3), inset 0 -2px 4px rgba(0,0,0,.35), 0 1px 0 #74160a, 0 3px 5px -2px rgba(0,0,0,.5); }
+.sos:disabled { cursor: not-allowed; } .sos:disabled .cap { filter: saturate(.35) brightness(1.05); }
+
+/* ================= tape (thermal printer) ================= */
+.tape { display: grid; gap: 10px; }
+.latch { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 10px; padding: 7px 12px 7px 10px; font: 700 12px/1 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); background: linear-gradient(180deg, var(--cap-hi), var(--cap-lo)); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(0,0,0,.13), 0 2px 0 rgba(0,0,0,.2), 0 4px 7px -3px rgba(0,0,0,.3); transition: transform .06s, box-shadow .06s; }
+.latch i { width: 8px; height: 8px; border-radius: 50%; background: #74787d; box-shadow: inset 0 1px 1px rgba(0,0,0,.55); }
+.latch[aria-pressed="true"] { transform: translateY(1.5px); box-shadow: inset 0 1px 3px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.13), 0 .5px 0 rgba(0,0,0,.2); }
+.latch[aria-pressed="true"] i { background: var(--green); box-shadow: 0 0 6px var(--green), 0 0 0 1px rgba(0,0,0,.25); }
+.latch:disabled { cursor: not-allowed; color: var(--ink-2); }
+.slot { position: relative; z-index: 3 !important; height: 12px; margin: 2px -4px 0; border-radius: 6px; background: linear-gradient(180deg, #08090a, #2b2d30); box-shadow: inset 0 2px 3px rgba(0,0,0,.9), 0 1px 0 rgba(255,255,255,.75), 0 -1px 0 rgba(0,0,0,.12); }
+.msgs { list-style: none; margin: -14px 0 0; padding: 0 12px; display: grid; gap: 12px; }
+.slip { filter: drop-shadow(0 1px 1px rgba(0,0,0,.2)) drop-shadow(0 5px 7px rgba(0,0,0,.08)); }
+.paper {
+  padding: 18px 16px 20px; font: 500 14px/1.45 var(--f-data); color: #1d1e21;
+  background: var(--grain), linear-gradient(180deg, #e7e6e0 0, #f6f5ef 14px, var(--paper) 40px);
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% 100% / 10px 5px repeat-x, linear-gradient(#000 0 0) 0 0 / 100% calc(100% - 5px) no-repeat;
+          mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% 100% / 10px 5px repeat-x, linear-gradient(#000 0 0) 0 0 / 100% calc(100% - 5px) no-repeat;
+}
+.slip:not(:first-child) .paper { padding-top: 14px; background: var(--grain), var(--paper); }
+.slip-head { display: flex; flex-wrap: wrap; gap: 3px 12px; padding-bottom: 8px; margin-bottom: 9px; border-bottom: 1px dashed rgba(0,0,0,.28); font: 600 10.5px/1.3 var(--f-data); letter-spacing: .1em; text-transform: uppercase; color: #55585c; }
+.slip-head .hop { color: #127a43; }
+.sosband { margin-bottom: 8px; font: 700 13px/1 var(--f-data); letter-spacing: .3em; color: #c42b1c; text-align: center; }
+.paper p { margin: 0; font-size: 15px; word-break: break-word; }
+.pass { margin-top: 12px; border: 1.5px solid #1d1e21; border-radius: 7px; background: transparent; padding: 8px 11px; font: 700 12.5px/1 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: #1d1e21; }
+.pass:active:not(:disabled) { background: #1d1e21; color: var(--paper); }
+.pass:disabled { opacity: .4; cursor: not-allowed; }
+.slip.printing .paper { animation: print 1.15s steps(18) both; }
+@keyframes print { from { clip-path: inset(0 0 100% 0); transform: translateY(-14px); } to { clip-path: inset(0 0 0 0); transform: none; } }
+.empty { margin: 4px 16px 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); text-align: center; }
+
+/* ================= service panel (prototype only) ================= */
+details.proto { margin-top: 4px; border-top: 1px solid rgba(0,0,0,.1); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset; padding: 12px 4px 0; font-size: 13px; color: var(--ink-2); }
+details.proto summary { cursor: pointer; font: 600 11px var(--f-label); letter-spacing: .2em; text-transform: uppercase; }
+details.proto p { margin: 8px 0 0; }
+details.proto .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+details.proto button { border: 0; border-radius: 9px; padding: 7px 11px; font-size: 13px; background: linear-gradient(180deg, var(--cap-hi), var(--cap-lo)); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(0,0,0,.12), 0 2px 0 rgba(0,0,0,.15); }
+details.proto button[aria-pressed="true"] { box-shadow: inset 0 1px 3px rgba(0,0,0,.2), 0 0 0 1.5px var(--ink); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<main class="device" id="device" data-case="ghost" aria-label="Dial Tone">
+  <canvas class="pcb" id="pcb" aria-hidden="true"></canvas>
+  <div class="frost" aria-hidden="true"></div>
+
+  <div class="plate" id="plate">
+    <svg class="trace" id="trace" aria-hidden="true"><path class="etch" id="etch"/><g id="vias"></g><path class="sig" id="sig" pathLength="100"/></svg>
+    <i class="screw tl" aria-hidden="true"></i><i class="screw tr" aria-hidden="true"></i><i class="screw bl" aria-hidden="true"></i><i class="screw br" aria-hidden="true"></i>
+
+    <header class="hdr">
+      <div class="vent" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div>
+        <h1 class="mark">Dial Tone</h1>
+        <p class="tag">The scream from the dead internet</p>
+      </div>
+      <div class="power">
+        <button class="rocker" id="power" aria-pressed="false" aria-label="Power"><span class="rk"></span></button>
+        <span class="silk">Power</span>
+      </div>
+    </header>
+
+    <section class="glass status" id="status" aria-label="Status lights">
+      <div class="leds" id="leds">
+        <button class="led g" data-led="MR" aria-label="MR: modem ready"><i class="lens"></i><b>MR</b></button>
+        <button class="led g" data-led="AA" aria-label="AA: listening, auto-answer"><i class="lens"></i><b>AA</b></button>
+        <button class="led a" data-led="CD" aria-label="CD: carrier detected"><i class="lens"></i><b>CD</b></button>
+        <button class="led a" data-led="OH" aria-label="OH: off hook, call mode"><i class="lens"></i><b>OH</b></button>
+        <button class="led g" data-led="RD" aria-label="RD: receiving data"><i class="lens"></i><b>RD</b></button>
+        <button class="led g" data-led="SD" aria-label="SD: sending data"><i class="lens"></i><b>SD</b></button>
+      </div>
+      <div class="vfd" aria-live="polite"><span class="code" id="code">— — —</span><span class="hint" id="hint">Flip the power switch to start</span></div>
+      <div class="legend" id="legend" hidden>
+        <div><b>MR</b>Ready</div><div><b>AA</b>Listening</div>
+        <div><b>CD</b>Hearing a signal</div><div><b>OH</b>Call mode</div>
+        <div><b>RD</b>Message received</div><div><b>SD</b>Sending</div>
+      </div>
+    </section>
+
+    <section class="lip" aria-label="Signal scope">
+      <div class="screen" id="screen">
+        <canvas id="scope"></canvas>
+        <div class="axis" aria-hidden="true"><span id="axTop">8k</span><span id="axMid">4k</span><span>Hz</span></div>
+        <div class="band" id="bandLabel">Standby</div>
+        <div class="ghost" id="ghost" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="modes">
+      <div class="silk-row"><span class="silk" id="modeLabel">Channel</span></div>
+      <div class="slider" role="radiogroup" aria-labelledby="modeLabel" id="modes">
+        <span class="thumb" id="thumb" aria-hidden="true"></span>
+        <button role="radio" data-mode="room" aria-checked="true"><b>Room</b><span>Speaker to mic</span></button>
+        <button role="radio" data-mode="call" aria-checked="false"><b>Call</b><span>Phone line</span></button>
+        <button role="radio" data-mode="quiet" aria-checked="false"><b>Quiet</b><span>Near-silent</span></button>
+      </div>
+      <p class="mode-note" id="modeNote"></p>
+    </section>
+
+    <section class="compose">
+      <div class="silk-row"><label class="silk" for="msg">Message</label><span class="silk" id="bytes">0 / 134 B</span></div>
+      <div class="well">
+        <textarea id="msg" rows="3" maxlength="200" placeholder="Type a short message">Water truck heading to Shelter B at 14:30</textarea>
+        <div class="meter"><div class="bar" id="bar" aria-hidden="true"></div><span id="air">~0.0 s on air</span></div>
+      </div>
+      <div class="actions">
+        <button class="key" id="tx" disabled><span class="kl" id="txLabel">Transmit</span><small id="txSub">ATDT</small><span class="strip"><i class="prog" id="prog"></i></span></button>
+        <div class="sos-wrap">
+          <button class="sos" id="sos" disabled aria-label="SOS. Hold for 2 seconds to send.">
+            <svg class="ring" viewBox="0 0 80 80" aria-hidden="true"><circle class="track" cx="40" cy="40" r="37"/><circle class="fill" id="sosFill" cx="40" cy="40" r="37" pathLength="100"/></svg>
+            <span class="cap">SOS</span>
+          </button>
+          <span class="silk">Hold 2 s</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tape" aria-labelledby="tapeLabel">
+      <div class="silk-row">
+        <span class="silk" id="tapeLabel">Tape</span>
+        <button class="latch" id="listen" aria-pressed="false" disabled><i></i><span id="listenLabel">Listen</span></button>
+      </div>
+      <div class="slot" id="slot" aria-hidden="true"></div>
+      <ul class="msgs" id="msgs" aria-live="polite"></ul>
+      <p class="empty" id="empty">No paper yet. Messages you send and hear print here, and anything you hear can be passed on to the next phone.</p>
+    </section>
+
+    <details class="proto">
+      <summary>Prototype controls</summary>
+      <p>Try the receive side without a second phone. These play a real transmission through the real decoder.</p>
+      <div class="row">
+        <button id="simIn">Play an incoming message</button>
+        <button id="simRelay">Play a relayed message (hop 2)</button>
+        <button id="simSos">Play an incoming SOS</button>
+        <button id="clear">Clear tape</button>
+      </div>
+      <div class="row" id="caseRow">
+        <button data-case="ghost" aria-pressed="true">Clear case</button>
+        <button data-case="beige" aria-pressed="false">Beige case</button>
+      </div>
+    </details>
+  </div>
+</main>
+
+<script src="vendor/ggwave.js"></script>
+<script>
+(async () => {
+const $ = (id) => document.getElementById(id);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const MODES = {
+  room:  { proto: 'AUDIBLE_FASTEST',    view: [0, 8000],      band: [1875, 6375],   label: 'Room · 1.9–6.4 kHz', note: 'Loudest and fastest. Hold the phones within a few meters.' },
+  call:  { proto: 'DT_FASTEST',         view: [0, 8000],      band: [1100, 2700],   label: 'Call · 1.1–2.7 kHz', note: 'Fits through a phone call or a voice note. Hold the phone to the call’s mic.' },
+  quiet: { proto: 'ULTRASOUND_FASTEST', view: [12000, 20000], band: [15000, 19500], label: 'Quiet · 15–19.5 kHz', note: 'Near-silent, same room only. Some older phones can’t hear it.' },
+};
+const ORDER = ['room', 'call', 'quiet'];
+const MAX_BYTES = 134, HDR = 6; // header: '#' + 4-char id + hop digit
+const device = $('device');
+
+// ---------- material: case choice ----------
+function setCase(c) {
+  device.dataset.case = c;
+  document.querySelectorAll('#caseRow button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.case === c));
+  try { localStorage.setItem('dialtone-case', c); } catch {}
+}
+$('caseRow').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setCase(b.dataset.case); });
+try { const c = localStorage.getItem('dialtone-case'); if (c === 'ghost' || c === 'beige') setCase(c); } catch {}
+
+// light follows the pointer across the glass and plastic
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  device.addEventListener('pointermove', (e) => {
+    const r = device.getBoundingClientRect();
+    device.style.setProperty('--lx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+    device.style.setProperty('--ly', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+  });
+}
+
+// ---------- the circuit board you see through the shell ----------
+function drawPCB() {
+  const c = $('pcb'), r = device.getBoundingClientRect(), d = devicePixelRatio || 1;
+  const W = r.width, H = r.height;
+  c.width = Math.round(W * d); c.height = Math.round(H * d);
+  const x = c.getContext('2d'); x.setTransform(d, 0, 0, d, 0, 0); x.clearRect(0, 0, W, H);
+  let s = 20261204; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const ink = (a) => `rgba(46,48,52,${a})`;
+  const rr = (X, Y, w, h, rad) => { x.beginPath(); x.roundRect(X, Y, w, h, rad); };
+  // copper pours along the sides
+  for (let k = 0; k < 14; k++) {
+    const left = rnd() < 0.5, y = 70 + rnd() * (H - 160), h = 24 + rnd() * 90;
+    x.fillStyle = ink(0.05 + rnd() * 0.07);
+    x.beginPath();
+    const X0 = left ? 0 : W - 15, X1 = left ? 15 : W;
+    x.moveTo(X0, y + 6); x.lineTo(left ? X1 - 6 : X0 + 6, y); x.lineTo(left ? X1 : X0, y); x.lineTo(left ? X1 : X0, y + h); x.lineTo(X0, y + h); x.closePath(); x.fill();
+  }
+  // traces running round the frame
+  x.lineCap = 'round';
+  x.strokeStyle = ink(0.26); x.lineWidth = 1.3; x.setLineDash([140, 16, 70, 12, 220, 20]);
+  rr(5, 5, W - 10, H - 10, 45); x.stroke();
+  x.strokeStyle = ink(0.16); x.lineWidth = 2.4; x.setLineDash([90, 34, 40, 18, 160, 26]);
+  rr(10, 10, W - 20, H - 20, 40); x.stroke();
+  x.setLineDash([]);
+  // top: memory-style cells
+  const n = 5, cw = 30, gap = 3, tx0 = W / 2 - (n * cw + (n - 1) * gap) / 2;
+  for (let i = 0; i < n; i++) { x.fillStyle = ink(0.13); rr(tx0 + i * (cw + gap), 2, cw, 13, 2); x.fill(); x.fillStyle = ink(0.08); x.fillRect(tx0 + i * (cw + gap) + 3, 10, cw - 6, 2); }
+  // bottom: header pins
+  for (let i = 0; i < 18; i++) { x.fillStyle = ink(0.2); x.fillRect(W / 2 - 80 + i * 9, H - 12, 5, 8); }
+  // left: connector via cluster
+  x.fillStyle = ink(0.32);
+  for (let i = 0; i < 9; i++) { x.beginPath(); x.arc(6 + (i % 2) * 4.5, H * 0.46 + i * 7, 1.9, 0, 7); x.fill(); }
+  // right: crystal slot + mounting hole
+  x.strokeStyle = ink(0.32); x.lineWidth = 1.3;
+  rr(W - 12, H * 0.34, 7, 78, 3.5); x.stroke();
+  x.beginPath(); x.arc(W - 8.5, H * 0.3, 3.6, 0, 7); x.stroke();
+  // corner bosses
+  for (const [cx, cy] of [[24, 24], [W - 24, 24], [24, H - 24], [W - 24, H - 24]]) { x.beginPath(); x.arc(cx, cy, 9, 0, 7); x.strokeStyle = ink(0.12); x.lineWidth = 3; x.stroke(); }
+}
+
+// ---------- the etched trace on the faceplate ----------
+function layoutTrace() {
+  const plate = $('plate'), pr = plate.getBoundingClientRect(), W = pr.width, H = pr.height;
+  const rel = (el) => { const r = el.getBoundingClientRect(); return { t: r.top - pr.top, b: r.bottom - pr.top, l: r.left - pr.left, r: r.right - pr.left, cy: (r.top + r.bottom) / 2 - pr.top }; };
+  const st = rel($('status')), sl = rel($('slot')), sc = rel($('screen')), tx = rel($('tx'));
+  const x = W - 9, y0 = st.t + 26, y1 = sl.cy;
+  const d = `M ${st.r} ${y0} H ${x - 6} L ${x} ${y0 + 6} V ${y1 - 6} L ${x - 6} ${y1} H ${sl.r - 2}`;
+  $('trace').setAttribute('viewBox', `0 0 ${W} ${H}`);
+  $('etch').setAttribute('d', d); $('sig').setAttribute('d', d);
+  $('vias').innerHTML = [sc.cy, tx.cy].map((y) => `<circle class="via" cx="${x}" cy="${y.toFixed(1)}" r="3.4"/>`).join('');
+}
+new ResizeObserver(drawPCB).observe(device);
+new ResizeObserver(layoutTrace).observe($('plate'));
+let flowT;
+function flow(dir, ms) { const t = $('trace'); t.classList.remove('up', 'down'); if (dir) t.classList.add(dir); clearTimeout(flowT); if (ms) flowT = setTimeout(() => t.classList.remove(dir), ms); }
+
+// ---------- ggwave ----------
+const gg = await ggwave_factory();
+gg.disableLog();
+for (const p of ['AUDIBLE_FASTEST','AUDIBLE_FAST','AUDIBLE_NORMAL','DT_FASTEST','DT_FAST','DT_NORMAL','ULTRASOUND_FASTEST','ULTRASOUND_FAST','ULTRASOUND_NORMAL'])
+  gg.rxToggleProtocol(gg.ProtocolId['GGWAVE_PROTOCOL_' + p], 1);
+const quiet = (fn) => { const l = console.log; console.log = () => {}; try { return fn(); } finally { console.log = l; } };
+function mkInst(sr) { const p = gg.getDefaultParameters(); p.sampleRateInp = sr; p.sampleRateOut = sr; return gg.init(p); }
+function encode(inst, text, proto) {
+  return quiet(() => { const v = gg.encode(inst, text, gg.ProtocolId['GGWAVE_PROTOCOL_' + proto], 25); const b = new Int8Array(v); return new Float32Array(b.buffer, 0, b.byteLength / 4).slice(); });
+}
+const est = mkInst(48000);
+
+// ---------- state ----------
+let mode = 'room', ctx = null, analyser = null, mic = null, proc = null, rx = null, tx = null;
+let powered = false, listening = false, sending = false, booting = false;
+let tape = [], printId = null;
+try { tape = JSON.parse(localStorage.getItem('dialtone-tape') || '[]'); } catch {}
+const seen = new Set(tape.map((m) => m.id));
+const save = () => { try { localStorage.setItem('dialtone-tape', JSON.stringify(tape.slice(-50))); } catch {} };
+
+// ---------- status lights ----------
+const LED = {};
+document.querySelectorAll('.led').forEach((el) => (LED[el.dataset.led] = el));
+const light = (k, on) => LED[k].classList.toggle('on', !!on);
+function blink(k, ms = 500) { light(k, true); setTimeout(() => light(k, false), ms); }
+$('leds').addEventListener('click', () => ($('legend').hidden = !$('legend').hidden));
+let lastEventAt = 0;
+function readout(code, hint) { if (code !== 'CARRIER' && code !== 'RING') lastEventAt = Date.now(); $('code').textContent = code; if (hint !== undefined) $('hint').textContent = hint; }
+
+// ---------- message framing ----------
+const newId = () => Math.random().toString(36).slice(2, 6).padEnd(4, '0');
+const frame = (m) => '#' + m.id + Math.min(9, m.hop) + m.text;
+function unframe(s) {
+  const t = s.replace(/\0+$/, '');
+  if (/^#[a-z0-9]{4}\d/.test(t)) return { id: t.slice(1, 5), hop: +t[5], text: t.slice(6) };
+  return { id: 'x' + newId().slice(1), hop: 0, text: t };
+}
+const utf8 = (s) => new TextEncoder().encode(s).length;
+
+// ---------- slide switch ----------
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('#modes button').forEach((b) => b.setAttribute('aria-checked', b.dataset.mode === m));
+  $('thumb').style.transform = `translateX(${ORDER.indexOf(m) * 100}%)`;
+  $('modeNote').textContent = MODES[m].note;
+  $('bandLabel').textContent = powered ? MODES[m].label : 'Standby';
+  const [lo, hi] = MODES[m].view;
+  $('axTop').textContent = hi / 1000 + 'k'; $('axMid').textContent = (lo + hi) / 2000 + 'k';
+  if (!booting) light('OH', powered && m === 'call');
+  updateMeter();
+}
+$('modes').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
+$('modes').addEventListener('keydown', (e) => {
+  const i = ORDER.indexOf(mode);
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); const n = ORDER[(i + (e.key === 'ArrowRight' ? 1 : 2)) % 3]; setMode(n); document.querySelector(`#modes [data-mode="${n}"]`).focus(); }
+});
+
+// ---------- byte bar + airtime (real numbers from the encoder) ----------
+$('bar').innerHTML = '<i></i>'.repeat(24);
+const SEGS = [...$('bar').children];
+let meterT;
+function updateMeter() {
+  const text = $('msg').value, bytes = utf8(text), over = bytes > MAX_BYTES;
+  $('bytes').textContent = `${bytes} / ${MAX_BYTES} B`;
+  $('bytes').classList.toggle('over', over);
+  const lit = Math.min(24, Math.ceil((bytes / MAX_BYTES) * 24));
+  SEGS.forEach((el, i) => (el.className = i < lit ? (over ? 'over' : i >= 19 ? 'warn' : 'on') : ''));
+  clearTimeout(meterT);
+  meterT = setTimeout(() => {
+    if (!text.trim() || over) { $('air').textContent = over ? 'Too long' : '~0.0 s on air'; $('txSub').textContent = 'ATDT'; return; }
+    const secs = (encode(est, frame({ id: 'abcd', hop: 0, text }), MODES[mode].proto).length / 48000).toFixed(1);
+    $('air').textContent = `~${secs} s on air`;
+    if (!sending) $('txSub').textContent = `ATDT · ${secs} s`;
+  }, 150);
+  $('tx').disabled = !powered || sending || !text.trim() || over;
+}
+$('msg').addEventListener('input', updateMeter);
+
+// ---------- scope ----------
+const cv = $('scope'), g = cv.getContext('2d');
+let bins = null;
+function sizeScope() { const r = cv.getBoundingClientRect(), d = devicePixelRatio || 1; cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); g.fillStyle = '#060807'; g.fillRect(0, 0, cv.width, cv.height); }
+sizeScope(); addEventListener('resize', sizeScope);
+let carrierFrames = 0;
+function drawScope() {
+  const W = cv.width, H = cv.height, col = Math.max(2, Math.round((devicePixelRatio || 1) * 2));
+  g.drawImage(cv, -col, 0);
+  const [lo, hi] = MODES[mode].view;
+  let bandEnergy = 0, bandN = 0;
+  for (let y = 0; y < H; y++) {
+    let v;
+    if (analyser) {
+      const hz = hi - (y / H) * (hi - lo), idx = Math.round(hz / (ctx.sampleRate / analyser.fftSize));
+      v = (bins[idx] || 0) / 255;
+      const [b0, b1] = MODES[mode].band;
+      if (hz >= b0 && hz <= b1) { bandEnergy += v; bandN++; }
+    } else v = Math.random() * 0.06; // standby static
+    const a = Math.min(1, (v * 1.25) ** 2);
+    g.fillStyle = '#060807'; g.fillRect(W - col, y, col, 1);
+    g.fillStyle = `rgba(125,255,178,${a.toFixed(3)})`;
+    g.fillRect(W - col, y, col, 1);
+  }
+  const yFor = (hz) => H - ((hz - lo) / (hi - lo)) * H;
+  g.fillStyle = 'rgba(255,178,26,0.4)';
+  for (const hz of MODES[mode].band) if (hz >= lo && hz <= hi) g.fillRect(W - col, Math.round(yFor(hz)), col, 1);
+  if (analyser) {
+    const level = bandN ? bandEnergy / bandN : 0;
+    carrierFrames = level > 0.32 ? Math.min(carrierFrames + 1, 8) : Math.max(carrierFrames - 1, 0);
+    const carrier = carrierFrames > 2;
+    if (!booting) light('CD', carrier);
+    const code = $('code').textContent, quietFor = Date.now() - lastEventAt > 2500;
+    if (carrier && !sending && listening && quietFor && code !== 'CARRIER') readout('CARRIER', 'Hearing a signal…');
+    if (!carrier && code === 'CARRIER') readout('OK', 'Listening for messages.');
+  }
+  requestAnimationFrame(tick);
+}
+function tick() { if (analyser) analyser.getByteFrequencyData(bins); drawScope(); }
+requestAnimationFrame(tick);
+
+// ghost: text resolving out of noise
+const GLYPHS = '░▒▓#%&*+=<>/\\|~^';
+function ghost(text) {
+  const el = $('ghost'), reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  el.classList.add('show');
+  if (reduce) { el.textContent = text; setTimeout(() => el.classList.remove('show'), 2500); return; }
+  let f = 0; const total = 26;
+  const t = setInterval(() => {
+    const done = Math.floor((f / total) * text.length);
+    el.textContent = text.slice(0, done) + [...text.slice(done)].map((c) => (c === ' ' ? ' ' : GLYPHS[(Math.random() * GLYPHS.length) | 0])).join('');
+    if (++f > total) { clearInterval(t); el.textContent = text; setTimeout(() => el.classList.remove('show'), 2200); }
+  }, 30);
+}
+
+// ---------- power: self-test, CRT warm-up, then ready ----------
+async function selfTest() {
+  booting = true;
+  const s = $('screen'); s.classList.remove('boot'); void s.offsetWidth; s.classList.add('boot');
+  readout('ATZ', 'Self-test…');
+  for (const k of ['MR', 'AA', 'CD', 'OH', 'RD', 'SD']) { light(k, true); await sleep(70); }
+  await sleep(180);
+  for (const k of ['SD', 'RD', 'OH', 'CD', 'AA']) { light(k, false); await sleep(40); }
+  await sleep(250);
+  booting = false;
+}
+$('power').addEventListener('click', async () => {
+  if (booting) return;
+  if (powered) return powerOff();
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  await ctx.resume();
+  analyser = ctx.createAnalyser(); analyser.fftSize = 2048; analyser.smoothingTimeConstant = 0.2;
+  bins = new Uint8Array(analyser.frequencyBinCount);
+  tx = mkInst(ctx.sampleRate); rx = mkInst(ctx.sampleRate);
+  proc = ctx.createScriptProcessor(1024, 1, 1);
+  proc.onaudioprocess = (e) => {
+    if (!listening) return;
+    const chunk = new Float32Array(e.inputBuffer.getChannelData(0));
+    const res = gg.decode(rx, new Int8Array(chunk.buffer));
+    if (res && res.length) received(new TextDecoder().decode(new Uint8Array(res).slice()));
+  };
+  const mute = ctx.createGain(); mute.gain.value = 0; proc.connect(mute).connect(ctx.destination);
+  $('power').setAttribute('aria-pressed', 'true');
+  const micP = navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } })
+    .then((stream) => { mic = ctx.createMediaStreamSource(stream); mic.connect(analyser); mic.connect(proc); return true; })
+    .catch(() => false);
+  const [micOk] = await Promise.all([micP, selfTest()]);
+  powered = true;
+  light('MR', true);
+  $('listen').disabled = false; $('sos').disabled = false;
+  setMode(mode); renderTape();
+  setListening(true);
+  readout('OK', micOk ? 'Ready. Listening for messages.' : 'Ready to send. Microphone is off, so you can’t hear messages.');
+});
+function powerOff() {
+  powered = false; setListening(false);
+  try { mic && mic.mediaStream.getTracks().forEach((t) => t.stop()); } catch {}
+  try { ctx.close(); } catch {}
+  gg.free(tx); gg.free(rx); ctx = analyser = mic = proc = tx = rx = null;
+  Object.keys(LED).forEach((k) => light(k, false));
+  $('power').setAttribute('aria-pressed', 'false');
+  $('listen').disabled = true; $('sos').disabled = true;
+  flow(null);
+  setMode(mode); renderTape();
+  readout('— — —', 'Flip the power switch to start');
+}
+
+// ---------- listen ----------
+function setListening(on) {
+  listening = on && powered;
+  $('listen').setAttribute('aria-pressed', listening);
+  $('listenLabel').textContent = listening ? 'Listening' : 'Listen';
+  light('AA', listening);
+  if (powered && !on) readout('NO CARRIER', 'Not listening. Press Listen to hear messages.');
+}
+$('listen').addEventListener('click', () => { setListening(!listening); if (listening) readout('OK', 'Listening for messages.'); });
+
+// ---------- transmit ----------
+async function transmit(m, label) {
+  if (!powered || sending) return;
+  sending = true; updateMeter();
+  seen.add(m.id);
+  const wave = encode(tx, frame(m), MODES[mode].proto);
+  const buf = ctx.createBuffer(1, wave.length, ctx.sampleRate); buf.copyToChannel(wave, 0);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  src.connect(ctx.destination); src.connect(analyser);
+  const secs = wave.length / ctx.sampleRate;
+  light('SD', true); readout('ATDT', `${label} · ${secs.toFixed(1)} s`); flow('up');
+  $('txLabel').textContent = 'Sending';
+  const prog = $('prog'); prog.style.transition = 'none'; prog.style.transform = 'scaleX(0)';
+  requestAnimationFrame(() => { prog.style.transition = `transform ${secs}s linear`; prog.style.transform = 'scaleX(1)'; });
+  src.start();
+  await new Promise((r) => (src.onended = r));
+  light('SD', false); sending = false; flow(null);
+  $('txLabel').textContent = 'Transmit'; prog.style.transition = 'none'; prog.style.transform = 'scaleX(0)';
+  readout('OK', 'Sent. Anyone in earshot has it.');
+  updateMeter();
+}
+$('tx').addEventListener('click', async () => {
+  const text = $('msg').value.trim();
+  const m = { id: newId(), hop: 0, text, dir: 'out', mode, at: Date.now() };
+  addToTape(m);
+  await transmit(m, 'Sending');
+});
+
+// ---------- SOS: hold to send ----------
+let sosT = null;
+const ring = $('sosFill');
+function ringTo(v, secs) { ring.style.transition = secs ? `stroke-dashoffset ${secs}s linear` : 'none'; ring.style.strokeDashoffset = v; }
+function sosDown(e) {
+  if (!powered || sending || sosT) return; e.preventDefault();
+  $('sos').classList.add('holding'); ringTo(0, 2);
+  readout('ATDT', 'Keep holding to send SOS…');
+  sosT = setTimeout(async () => {
+    sosT = null; $('sos').classList.remove('holding'); ringTo(100);
+    const m = { id: newId(), hop: 0, text: 'SOS ' + ($('msg').value.trim() || 'Need help'), dir: 'out', mode, at: Date.now(), sos: true };
+    addToTape(m); await transmit(m, 'SOS');
+  }, 2000);
+}
+function sosUp() { if (sosT) { clearTimeout(sosT); sosT = null; $('sos').classList.remove('holding'); ringTo(100, 0.25); readout('OK', 'Hold SOS for 2 seconds to send.'); } }
+$('sos').addEventListener('pointerdown', sosDown);
+['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => $('sos').addEventListener(ev, sosUp));
+$('sos').addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) sosDown(e); });
+$('sos').addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') sosUp(); });
+$('sos').addEventListener('contextmenu', (e) => e.preventDefault());
+
+// ---------- receive ----------
+function received(raw) {
+  const m = unframe(raw);
+  blink('RD', 900);
+  if (seen.has(m.id)) { readout('OK', 'Heard a message you already have.'); return; }
+  seen.add(m.id);
+  const msg = { ...m, dir: 'in', mode, at: Date.now(), sos: /^SOS\b/.test(m.text) };
+  flow('down', 1400);
+  addToTape(msg);
+  readout('CONNECT', msg.sos ? 'SOS received' : `Message received${m.hop ? ` · hop ${m.hop}` : ''}`);
+  ghost(m.text);
+}
+
+// ---------- tape: the thermal printer ----------
+const time = (t) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function addToTape(m) { tape.push(m); printId = m.id; save(); renderTape(); }
+function renderTape() {
+  $('empty').hidden = tape.length > 0;
+  $('msgs').innerHTML = tape.slice().reverse().map((m) => `
+    <li class="slip ${m.sos ? 'sos-slip' : ''} ${m.id === printId ? 'printing' : ''}"><div class="paper">
+      ${m.sos ? '<div class="sosband">*** SOS ***</div>' : ''}
+      <div class="slip-head">
+        <span>${m.dir === 'in' ? 'Heard' : 'Sent'}</span>
+        ${m.hop ? `<span class="hop">Hop ${m.hop}</span>` : ''}
+        <span>${esc(m.mode)}</span><span>${time(m.at)}</span>
+        ${m.passed ? `<span>Passed on ×${m.passed}</span>` : ''}
+      </div>
+      <p>${esc(m.text)}</p>
+      ${m.dir === 'in' ? `<button class="pass" data-id="${esc(m.id)}" ${powered ? '' : 'disabled'}>Pass it on → hop ${m.hop + 1}</button>` : ''}
+    </div></li>`).join('');
+  printId = null;
+}
+$('msgs').addEventListener('click', async (e) => {
+  const b = e.target.closest('.pass'); if (!b || sending) return;
+  const m = tape.find((x) => x.id === b.dataset.id); if (!m) return;
+  m.passed = (m.passed || 0) + 1; save(); renderTape();
+  await transmit({ id: m.id, hop: m.hop + 1, text: m.text }, `Passing on · hop ${m.hop + 1}`);
+});
+$('clear').addEventListener('click', () => { tape = []; seen.clear(); save(); renderTape(); });
+
+// ---------- prototype: play a real transmission into the real decoder ----------
+async function playIncoming(text, hop) {
+  if (!powered) { readout('ERROR', 'Switch the power on first.'); return; }
+  if (!listening) setListening(true);
+  const wave = encode(tx, frame({ id: newId(), hop, text }), MODES[mode].proto);
+  const buf = ctx.createBuffer(1, wave.length, ctx.sampleRate); buf.copyToChannel(wave, 0);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  src.connect(analyser); src.connect(proc); src.connect(ctx.destination);
+  readout('RING', 'Incoming…');
+  src.start();
+}
+$('simIn').addEventListener('click', () => playIncoming('Shelter C has power and water. Room for 12 more.', 0));
+$('simRelay').addEventListener('click', () => playIncoming('Road to Shelter B closed at the bridge. Use Elm St.', 2));
+$('simSos').addEventListener('click', () => playIncoming('SOS 2 people trapped, 41 Harbor Rd, 2nd floor', 1));
+
+setMode('room'); renderTape(); updateMeter(); layoutTrace();
+})();
+</script>
+</body>
+</html>
