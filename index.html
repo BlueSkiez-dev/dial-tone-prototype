@@ -176,6 +176,7 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .key .kl { font: 700 20px/1 var(--f-label); letter-spacing: .22em; text-transform: uppercase; padding-left: .22em; }
 .key small { font: 500 11px var(--f-data); letter-spacing: .06em; color: #9ea3a8; }
 .key:disabled { cursor: not-allowed; } .key:disabled .kl, .key:disabled small { opacity: .4; }
+.key.is-sending:disabled { cursor: progress; } .key.is-sending:disabled .kl, .key.is-sending:disabled small { opacity: 1; }
 .key .strip { position: absolute; left: 16px; right: 16px; bottom: 8px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.07); overflow: hidden; }
 .key .prog { position: absolute; inset: 0; background: var(--phosphor); box-shadow: 0 0 8px var(--phosphor); transform-origin: left; transform: scaleX(0); }
 .sos-wrap { display: grid; justify-items: center; gap: 6px; }
@@ -228,6 +229,9 @@ details.proto .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
 details.proto button { border: 0; border-radius: 9px; padding: 7px 11px; font-size: 13px; background: linear-gradient(180deg, var(--cap-hi), var(--cap-lo)); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(0,0,0,.12), 0 2px 0 rgba(0,0,0,.15); }
 details.proto button[aria-pressed="true"] { box-shadow: inset 0 1px 3px rgba(0,0,0,.2), 0 0 0 1.5px var(--ink); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+/* static design states (?state=…): no motion, no prototype drawer */
+.state-mode *, .state-mode *::before, .state-mode *::after { transition: none !important; animation: none !important; }
+.state-mode details.proto { display: none; }
 </style>
 </head>
 <body>
@@ -438,9 +442,12 @@ const est = mkInst(48000);
 let mode = 'room', ctx = null, analyser = null, mic = null, proc = null, rx = null, tx = null;
 let powered = false, listening = false, sending = false, booting = false;
 let tape = [], printId = null;
-try { tape = JSON.parse(localStorage.getItem('dialtone-tape') || '[]'); } catch {}
+// ?state=<name> renders one exact, static design state (for review and Figma capture). Nothing is saved.
+const STATE = new URLSearchParams(location.search).get('state');
+let frozen = false;
+if (!STATE) { try { tape = JSON.parse(localStorage.getItem('dialtone-tape') || '[]'); } catch {} }
 const seen = new Set(tape.map((m) => m.id));
-const save = () => { try { localStorage.setItem('dialtone-tape', JSON.stringify(tape.slice(-50))); } catch {} };
+const save = () => { if (STATE) return; try { localStorage.setItem('dialtone-tape', JSON.stringify(tape.slice(-50))); } catch {} };
 
 // ---------- status lights ----------
 const LED = {};
@@ -507,6 +514,7 @@ function sizeScope() { const r = cv.getBoundingClientRect(), d = devicePixelRati
 sizeScope(); addEventListener('resize', sizeScope);
 let carrierFrames = 0;
 function drawScope() {
+  if (frozen) return;
   const W = cv.width, H = cv.height, col = Math.max(2, Math.round((devicePixelRatio || 1) * 2));
   g.drawImage(cv, -col, 0);
   const [lo, hi] = MODES[mode].view;
@@ -589,9 +597,9 @@ $('power').addEventListener('click', async () => {
   const [micOk] = await Promise.all([micP, selfTest()]);
   powered = true;
   light('MR', true);
-  $('listen').disabled = false; $('sos').disabled = false;
+  $('listen').disabled = !micOk; $('sos').disabled = false;
   setMode(mode); renderTape();
-  setListening(true);
+  if (micOk) setListening(true); else $('listenLabel').textContent = 'No mic';
   readout('OK', micOk ? 'Ready. Listening for messages.' : 'Ready to send. Microphone is off, so you can’t hear messages.');
 });
 function powerOff() {
@@ -627,13 +635,13 @@ async function transmit(m, label) {
   const src = ctx.createBufferSource(); src.buffer = buf;
   src.connect(ctx.destination); src.connect(analyser);
   const secs = wave.length / ctx.sampleRate;
-  light('SD', true); readout('ATDT', `${label} · ${secs.toFixed(1)} s`); flow('up');
+  light('SD', true); readout('ATDT', `${label} · ${secs.toFixed(1)} s`); flow('up'); $('tx').classList.add('is-sending');
   $('txLabel').textContent = 'Sending';
   const prog = $('prog'); prog.style.transition = 'none'; prog.style.transform = 'scaleX(0)';
   requestAnimationFrame(() => { prog.style.transition = `transform ${secs}s linear`; prog.style.transform = 'scaleX(1)'; });
   src.start();
   await new Promise((r) => (src.onended = r));
-  light('SD', false); sending = false; flow(null);
+  light('SD', false); sending = false; flow(null); $('tx').classList.remove('is-sending');
   $('txLabel').textContent = 'Transmit'; prog.style.transition = 'none'; prog.style.transform = 'scaleX(0)';
   readout('OK', 'Sent. Anyone in earshot has it.');
   updateMeter();
@@ -734,6 +742,86 @@ $('simRelay').addEventListener('click', () => playIncoming('Road to Shelter B cl
 $('simSos').addEventListener('click', () => playIncoming('SOS 2 people trapped, 41 Harbor Rd, 2nd floor', 1));
 
 setMode('room'); renderTape(); updateMeter(); layoutTrace();
+
+// ---------- design states: ?state=off|selftest|ready|sending|carrier|received|sos-hold|sos-received|call|quiet|too-long|mic-off|not-listening|tape-expanded|legend|beige ----------
+if (STATE) applyState(STATE);
+function fft(re, im) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) { let b = n >> 1; for (; j & b; b >>= 1) j ^= b; j ^= b; if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; } }
+  for (let len = 2; len <= n; len <<= 1) {
+    const a = -2 * Math.PI / len, wr = Math.cos(a), wi = Math.sin(a);
+    for (let i = 0; i < n; i += len) { let cr = 1, ci = 0; for (let k = 0; k < len / 2; k++) { const p = i + k, q = p + len / 2, tr = re[q] * cr - im[q] * ci, ti = re[q] * ci + im[q] * cr; re[q] = re[p] - tr; im[q] = im[p] - ti; re[p] += tr; im[p] += ti; const nr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = nr; } }
+  }
+}
+// Paint the scope as the live analyser would have drawn it: the real modem sound, 2 px columns at 60 fps, newest on the right.
+function paintScope({ text = null, upTo = 1, tail = 0, noise = 0.03, warm = false } = {}) {
+  const W = cv.width, H = cv.height, d = devicePixelRatio || 1, col = Math.max(2, Math.round(d * 2)), cols = Math.ceil(W / col);
+  const [lo, hi] = MODES[mode].view, N = 2048, SR = 48000, hop = SR / 60;
+  const win = new Float32Array(N).map((_, i) => 0.42 - 0.5 * Math.cos(2 * Math.PI * i / N) + 0.08 * Math.cos(4 * Math.PI * i / N));
+  const wave = text ? encode(est, frame({ id: 'abcd', hop: 0, text }), MODES[mode].proto) : null;
+  const end = wave ? Math.floor(wave.length * upTo) + tail * hop : 0;
+  let s = 7; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  g.fillStyle = '#060807'; g.fillRect(0, 0, W, H);
+  for (let c = 0; c < cols; c++) {
+    const x = W - (cols - c) * col, t0 = end - (cols - 1 - c) * hop - N;
+    let mags = null;
+    if (wave && t0 + N > 0 && t0 < wave.length) {
+      const re = new Float32Array(N), im = new Float32Array(N);
+      for (let i = 0; i < N; i++) { const k = t0 + i; re[i] = (k >= 0 && k < wave.length ? wave[k] : 0) * win[i]; }
+      fft(re, im); mags = (bin) => { const m = Math.hypot(re[bin], im[bin]) / N; const db = 20 * Math.log10(m + 1e-12); return Math.max(0, Math.min(1, (db + 100) / 70)); };
+    }
+    for (let y = 0; y < H; y++) {
+      const hz = hi - (y / H) * (hi - lo);
+      let v = mags && hz < SR / 2 ? mags(Math.round(hz / (SR / N))) : rnd() * noise;
+      if (warm && Math.abs(y - H / 2) < 2 * d) v = 1;
+      const a = Math.min(1, (v * 1.25) ** 2);
+      if (a > 0.004) { g.fillStyle = `rgba(125,255,178,${a.toFixed(3)})`; g.fillRect(x, y, col, 1); }
+    }
+  }
+  g.fillStyle = 'rgba(255,178,26,0.4)';
+  for (const hz of MODES[mode].band) if (hz >= lo && hz <= hi) g.fillRect(0, Math.round(H - ((hz - lo) / (hi - lo)) * H), W, Math.max(1, Math.round(d)));
+}
+function applyState(name) {
+  document.documentElement.classList.add('state-mode');
+  frozen = true;
+  const at = (h, m) => { const t = new Date(); t.setHours(h, m, 0, 0); return t.getTime(); };
+  const SLIPS = [
+    { id: 's001', hop: 0, text: 'Water truck heading to Shelter B at 14:30', dir: 'out', mode: 'room', at: at(14, 2) },
+    { id: 's002', hop: 1, text: 'SOS 2 people trapped, 41 Harbor Rd, 2nd floor', dir: 'in', mode: 'call', at: at(14, 11), sos: true },
+    { id: 's003', hop: 2, text: 'Road to Shelter B closed at the bridge. Use Elm St.', dir: 'in', mode: 'room', at: at(14, 20), passed: 1 },
+    { id: 's004', hop: 0, text: 'Shelter C has power and water. Room for 12 more.', dir: 'in', mode: 'room', at: at(14, 31) },
+    { id: 's005', hop: 0, text: 'Copy. Sending 2 volunteers to Elm St.', dir: 'out', mode: 'room', at: at(14, 33) },
+  ];
+  const on = (mic = true) => {
+    powered = true; $('power').setAttribute('aria-pressed', 'true'); light('MR', true);
+    $('sos').disabled = false; $('listen').disabled = !mic;
+    if (mic) { listening = true; $('listen').setAttribute('aria-pressed', 'true'); $('listenLabel').textContent = 'Listening'; light('AA', true); }
+    else $('listenLabel').textContent = 'No mic';
+  };
+  const setTape = (n, expand = false) => { tape = SLIPS.slice(0, n); expanded = expand; renderTape(); };
+  const show = (code, hint) => { $('code').textContent = code; $('hint').textContent = hint; };
+  const ghostText = (t) => { const el = $('ghost'); el.textContent = t; el.classList.add('show'); };
+  const S = {
+    'off': () => { paintScope({ noise: 0.06 }); },
+    'selftest': () => { on(); ['AA', 'CD', 'OH', 'RD', 'SD'].forEach((k) => light(k, true)); setMode(mode); show('ATZ', 'Self-test…'); paintScope({ warm: true, noise: 0 }); },
+    'ready': () => { on(); setMode(mode); show('OK', 'Ready. Listening for messages.'); paintScope(); },
+    'sending': () => { on(); setTape(1); setMode(mode); light('SD', true); show('ATDT', 'Sending · 2.2 s'); $('txLabel').textContent = 'Sending'; $('tx').disabled = true; $('tx').classList.add('is-sending'); $('prog').style.transform = 'scaleX(.55)'; $('trace').classList.add('up'); $('sig').style.strokeDashoffset = '-40'; paintScope({ text: SLIPS[0].text, upTo: 0.55 }); },
+    'carrier': () => { on(); setTape(1); setMode(mode); light('CD', true); show('CARRIER', 'Hearing a signal…'); paintScope({ text: SLIPS[3].text, upTo: 0.4 }); },
+    'received': () => { on(); setTape(4); setMode(mode); light('RD', true); show('CONNECT', 'Message received'); ghostText(SLIPS[3].text); $('trace').classList.add('down'); $('sig').style.strokeDashoffset = '-70'; paintScope({ text: SLIPS[3].text, tail: 25 }); },
+    'sos-hold': () => { on(); setTape(1); setMode(mode); $('sos').classList.add('holding'); ring.style.strokeDashoffset = '50'; show('ATDT', 'Keep holding to send SOS…'); paintScope(); },
+    'sos-received': () => { mode = 'call'; on(); setTape(2); setMode('call'); light('RD', true); show('CONNECT', 'SOS received'); ghostText(SLIPS[1].text); paintScope({ text: SLIPS[1].text, tail: 25 }); },
+    'call': () => { on(); setMode('call'); show('OK', 'Ready. Listening for messages.'); paintScope(); },
+    'quiet': () => { on(); setMode('quiet'); show('OK', 'Ready. Listening for messages.'); paintScope(); },
+    'too-long': () => { on(); $('msg').value = 'Water truck heading to Shelter B at 14:30. Bring the blue tarps, the generator from the school gym, and two volunteers who can lift heavy boxes up the stairs.'; setMode(mode); updateMeter(); $('air').textContent = 'Too long'; show('OK', 'Message is too long to send. Shorten it.'); paintScope(); },
+    'mic-off': () => { on(false); setMode(mode); show('OK', 'Ready to send. Microphone is off, so you can’t hear messages.'); paintScope(); },
+    'not-listening': () => { on(); listening = false; $('listen').setAttribute('aria-pressed', 'false'); $('listenLabel').textContent = 'Listen'; light('AA', false); setMode(mode); show('NO CARRIER', 'Not listening. Press Listen to hear messages.'); paintScope({ noise: 0.015 }); },
+    'tape-expanded': () => { on(); setTape(5, true); setMode(mode); show('OK', 'Listening for messages.'); paintScope(); },
+    'legend': () => { on(); setMode(mode); $('legend').hidden = false; show('OK', 'Ready. Listening for messages.'); paintScope(); },
+    'beige': () => { setCase('beige'); S.received(); },
+  };
+  (S[name] || S.off)();
+  document.title = 'Dial Tone · ' + name;
+}
 })();
 </script>
 </body>
