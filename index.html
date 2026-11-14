@@ -221,6 +221,84 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .more[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .empty { margin: 4px 16px 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); text-align: center; }
 
+/* ================= small parts: mini keys, notices, group key ================= */
+.minikey { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; border: 0; border-radius: 10px; padding: 0 14px; font: 700 12px/1 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); background: linear-gradient(180deg, var(--cap-hi), var(--cap-lo)); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(0,0,0,.13), 0 2px 0 rgba(0,0,0,.2), 0 4px 7px -3px rgba(0,0,0,.3); }
+.minikey:active:not(:disabled) { transform: translateY(1.5px); box-shadow: inset 0 1px 3px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.13); }
+.minikey:disabled { color: var(--ink-2); cursor: not-allowed; opacity: .6; }
+.minikey svg { width: 14px; height: 14px; flex: none; }
+.notice { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; font: 13px/1.45 var(--f-body); color: var(--ink-2); background: linear-gradient(180deg, var(--cap-hi), var(--cap)); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.12); }
+.notice::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 1.5px rgba(0,0,0,.25), 0 0 7px var(--amber); }
+.notice b { color: var(--ink); font-weight: 600; }
+.notice .grow { flex: 1; }
+.notice .minikey { margin: -2px -2px -2px 0; min-height: 34px; }
+.keybar { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: stretch; }
+.keydisp { display: flex; align-items: center; gap: 12px; padding: 10px 14px; min-height: 54px; }
+.keydisp svg { width: 18px; height: 18px; flex: none; color: #8e938e; }
+.keydisp.locked svg { color: var(--phosphor); filter: drop-shadow(0 0 4px rgba(125,255,178,.6)); }
+.keydisp b { display: block; font: 600 12.5px/1.2 var(--f-data); letter-spacing: .1em; text-transform: uppercase; color: #dfe4de; }
+.keydisp.locked b { color: var(--phosphor); text-shadow: 0 0 8px rgba(125,255,178,.5); }
+.keydisp span { display: block; font: 11.5px/1.35 var(--f-data); color: #a3a9a3; }
+.keybar .minikey { min-height: 54px; padding: 0 16px; }
+.types { display: flex; gap: 8px; }
+/* slip variants */
+.slip-head .lock { color: #127a43; }
+.paper .redacted { letter-spacing: .02em; color: #9a9a96; }
+.paper .why { margin-top: 8px; font: 12px/1.45 var(--f-body); color: #55585c; }
+.paper .stamp { display: inline-block; margin-bottom: 8px; padding: 3px 8px 2px; border: 1.5px solid #127a43; border-radius: 4px; font: 700 12px/1 var(--f-data); letter-spacing: .2em; color: #127a43; transform: rotate(-2deg); }
+.paper .coords { font: 600 17px/1.3 var(--f-data); letter-spacing: .02em; }
+.paper .bearing { display: flex; align-items: center; gap: 10px; margin-top: 6px; font: 12.5px var(--f-data); color: #55585c; }
+.paper .arrow { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #1d1e21; display: grid; place-items: center; }
+.paper .arrow i { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 11px solid #1d1e21; transform: rotate(var(--deg, 0deg)) translateY(-1px); }
+.slip.sys .paper { background: var(--grain), repeating-linear-gradient(135deg, #f6f5ef 0 10px, #f1f0ea 10px 20px); }
+.slip.sys .slip-head { color: #1d1e21; }
+.sysacts { display: flex; gap: 8px; flex-wrap: wrap; }
+/* attention pulse on the power rocker after onboarding */
+.rocker.hint { animation: hint 1.4s ease-in-out 4; }
+@keyframes hint { 0%, 100% { box-shadow: inset 0 2px 4px rgba(0,0,0,.8), 0 0 0 1px rgba(0,0,0,.25), 0 1px 0 1.5px rgba(255,255,255,.6); } 50% { box-shadow: inset 0 2px 4px rgba(0,0,0,.8), 0 0 0 1px rgba(0,0,0,.25), 0 0 0 6px rgba(255,178,26,.45); } }
+
+/* ================= sheet: a screwed-on sub-panel that slides up ================= */
+.scrim { position: fixed; inset: 0; z-index: 20; background: rgba(20,22,26,.45); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.sheet { position: fixed; z-index: 21; left: 50%; bottom: 0; width: min(430px, 100%); max-height: 90vh; overflow: auto; transform: translateX(-50%); padding: 30px 22px calc(26px + env(safe-area-inset-bottom)); border-radius: 30px 30px 0 0;
+  background: var(--grain), radial-gradient(140% 60% at 50% -8%, var(--plate-hi) 0%, var(--plate) 55%, var(--plate-lo) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 0 0 1px rgba(0,0,0,.08), 0 -12px 40px rgba(0,0,0,.28); animation: sheetUp .38s cubic-bezier(.2,.9,.3,1.08); }
+@keyframes sheetUp { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
+.sheet .screw.tl { top: 10px; left: 12px; } .sheet .screw.tr { top: 10px; right: 12px; }
+.sheet .grip { width: 44px; height: 5px; margin: -16px auto 14px; border-radius: 3px; background: rgba(0,0,0,.18); box-shadow: 0 1px 0 rgba(255,255,255,.6); }
+.sheet .kicker, .sheet p.silk { margin: 0 0 8px; font: 600 11px/1 var(--f-label); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.sheet h2 { margin: 0 0 10px; font: 700 26px/1.05 var(--f-label); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.sheet p, .sheet li { margin: 0 0 10px; font: 15px/1.5 var(--f-body); color: var(--ink-2); }
+.sheet ol { margin: 0 0 10px; padding-left: 20px; }
+.sheet strong { color: var(--ink); font-weight: 600; }
+.sheet .illus { display: grid; place-items: center; height: 132px; margin: 0 0 16px; border-radius: 16px; }
+.sheet .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.sheet .btns.one { grid-template-columns: 1fr; }
+.btn { min-height: 52px; border: 0; border-radius: 13px; padding: 0 14px; font: 700 14px/1 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); background: linear-gradient(180deg, var(--cap-hi), var(--cap-lo)); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(0,0,0,.13), 0 3px 0 rgba(0,0,0,.2), 0 6px 10px -4px rgba(0,0,0,.3); }
+.btn.primary { color: #eef0ee; background: linear-gradient(180deg, #3b3e42 0%, #2a2c30 45%, #1e2023 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 0 0 1px #0a0b0c, 0 3px 0 #0a0b0c, 0 8px 14px -6px rgba(0,0,0,.55); }
+.btn:active:not(:disabled) { transform: translateY(2px); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.linkbtn { display: block; margin: 14px auto 0; border: 0; background: none; font: 600 13px var(--f-body); color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+.dots { display: flex; justify-content: center; gap: 7px; margin-top: 16px; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(0,0,0,.18); box-shadow: inset 0 1px 1px rgba(0,0,0,.3); }
+.dots i.on { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.qrcard { display: grid; justify-items: center; gap: 10px; padding: 18px 16px 16px; border-radius: 16px; background: var(--grain), var(--paper); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.15), 0 6px 14px -8px rgba(0,0,0,.3); }
+.qrcard canvas { width: 196px; height: 196px; image-rendering: pixelated; }
+.qrcard .gname { font: 700 18px/1 var(--f-label); letter-spacing: .16em; text-transform: uppercase; color: #1d1e21; }
+.words { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 4px 0 10px; }
+.words b { padding: 7px 10px 6px; border-radius: 8px; font: 600 13px/1 var(--f-data); letter-spacing: .1em; color: var(--phosphor); background: var(--glass); box-shadow: inset 0 1px 3px rgba(0,0,0,.8), 0 1px 0 rgba(255,255,255,.6); text-shadow: 0 0 6px rgba(125,255,178,.5); }
+.sheet .field { margin: 6px 0 4px; border-radius: 13px; background: var(--grain), linear-gradient(180deg, #efefed, #fafaf8 30%); box-shadow: inset 0 2px 4px rgba(0,0,0,.2), inset 0 0 0 1px rgba(0,0,0,.08), 0 1px 0 rgba(255,255,255,.75); }
+.sheet .field input { display: block; width: 100%; border: 0; background: transparent; padding: 15px 14px; font: 600 18px var(--f-data); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.sheet .field input:focus { outline: none; }
+.sheet .field:focus-within { box-shadow: inset 0 2px 4px rgba(0,0,0,.2), 0 0 0 2px #2d7dff; }
+.sheet .cam { position: relative; height: 220px; margin-bottom: 4px; border-radius: 16px; overflow: hidden; }
+.sheet .cam video { width: 100%; height: 100%; object-fit: cover; }
+.sheet .cam .reticle { position: absolute; inset: 30px 60px; border: 2px solid rgba(125,255,178,.8); border-radius: 12px; box-shadow: 0 0 0 999px rgba(0,0,0,.35); }
+.appicon { position: relative; width: 92px; height: 92px; border-radius: 24px; background: var(--shell); box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 10px 18px -8px rgba(0,0,0,.4), inset 0 2px 0 rgba(255,255,255,.9), inset 0 0 12px rgba(255,255,255,.6); }
+.appicon::before { content: ""; position: absolute; inset: 9px; border-radius: 17px; background: var(--grain), radial-gradient(120% 70% at 50% 0%, var(--plate-hi), var(--plate) 60%, var(--plate-lo)); box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 2px 4px rgba(0,0,0,.25); }
+.appicon svg { position: absolute; inset: 24px; width: 44px; height: 44px; }
+.appicon i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #9b9da2); box-shadow: 0 0 0 1px rgba(0,0,0,.18); }
+body.sheet-open { overflow: hidden; }
+.state-mode body.sheet-open, body.sheet-open.state-shot { height: 100vh; }
+
 /* ================= service panel (prototype only) ================= */
 details.proto { margin-top: 4px; border-top: 1px solid rgba(0,0,0,.1); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset; padding: 12px 4px 0; font-size: 13px; color: var(--ink-2); }
 details.proto summary { cursor: pointer; font: 600 11px var(--f-label); letter-spacing: .2em; text-transform: uppercase; }
@@ -290,6 +368,18 @@ details.proto button[aria-pressed="true"] { box-shadow: inset 0 1px 3px rgba(0,0
         <button role="radio" data-mode="quiet" aria-checked="false"><b>Quiet</b><span>Near-silent</span></button>
       </div>
       <p class="mode-note" id="modeNote"></p>
+      <p class="notice" id="quietNote" hidden><span>Near-silent needs both phones to handle <b>15–19.5 kHz</b>, and some older phones can’t. If nothing arrives within 10 seconds, switch to Room.</span></p>
+    </section>
+
+    <section class="keyrow" aria-labelledby="keyLabel">
+      <div class="silk-row"><span class="silk" id="keyLabel">Group key</span></div>
+      <div class="keybar">
+        <div class="glass keydisp" id="keyDisp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path id="shackle" d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>
+          <div><b id="keyName">Open channel</b><span id="keySub">Anyone nearby can read</span></div>
+        </div>
+        <button class="minikey" id="keyBtn">Key</button>
+      </div>
     </section>
 
     <section class="compose">
@@ -297,6 +387,10 @@ details.proto button[aria-pressed="true"] { box-shadow: inset 0 1px 3px rgba(0,0
       <div class="well">
         <textarea id="msg" rows="3" maxlength="200" placeholder="Type a short message">Water truck heading to Shelter B at 14:30</textarea>
         <div class="meter"><div class="bar" id="bar" aria-hidden="true"></div><span id="air">~0.0 s on air</span></div>
+      </div>
+      <div class="types" role="group" aria-label="Quick messages">
+        <button class="minikey" id="safeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>I’m safe</button>
+        <button class="minikey" id="locBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Location</button>
       </div>
       <div class="actions">
         <button class="key" id="tx" disabled><span class="kl" id="txLabel">Transmit</span><small id="txSub">ATDT</small><span class="strip"><i class="prog" id="prog"></i></span></button>
@@ -321,6 +415,8 @@ details.proto button[aria-pressed="true"] { box-shadow: inset 0 1px 3px rgba(0,0
       <p class="empty" id="empty">No paper yet. Messages you send and hear print here, and anything you hear can be passed on to the next phone.</p>
     </section>
 
+    <div class="notice" id="installNote" hidden><span class="grow"><b>Install Dial Tone</b> so it opens with no internet at all.</span><button class="minikey" id="installBtn">Install</button></div>
+
     <details class="proto">
       <summary>Prototype controls</summary>
       <p>Try the receive side without a second phone. These play a real transmission through the real decoder.</p>
@@ -330,15 +426,31 @@ details.proto button[aria-pressed="true"] { box-shadow: inset 0 1px 3px rgba(0,0
         <button id="simSos">Play an incoming SOS</button>
         <button id="clear">Clear tape</button>
       </div>
+      <div class="row">
+        <button id="simKey">Play a key screech (Shelter Net)</button>
+        <button id="simLocked">Play a locked message</button>
+        <button id="simUpdate">Simulate “update ready”</button>
+        <button id="showOnboarding">Show onboarding</button>
+        <button id="showMic">Show microphone help</button>
+      </div>
+      <p>Encryption is shown, not applied, in this prototype: locked messages travel as plain sound with a lock flag. The real app encrypts with AES-128-GCM.</p>
       <div class="row" id="caseRow">
         <button data-case="ghost" aria-pressed="true">Clear case</button>
         <button data-case="beige" aria-pressed="false">Beige case</button>
       </div>
     </details>
   </div>
+
+  <div class="scrim" id="scrim" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+    <i class="screw tl" aria-hidden="true"></i><i class="screw tr" aria-hidden="true"></i>
+    <div class="grip" aria-hidden="true"></div>
+    <div id="sheetBody"></div>
+  </section>
 </main>
 
 <script src="vendor/ggwave.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (async () => {
 const $ = (id) => document.getElementById(id);
@@ -460,9 +572,11 @@ function readout(code, hint) { if (code !== 'CARRIER' && code !== 'RING') lastEv
 
 // ---------- message framing ----------
 const newId = () => Math.random().toString(36).slice(2, 6).padEnd(4, '0');
-const frame = (m) => '#' + m.id + Math.min(9, m.hop) + m.text;
+// '~' after the hop digit = locked with a group key (prototype flag; the real app encrypts)
+const frame = (m) => '#' + m.id + Math.min(9, m.hop) + (m.lock ? '~' : '') + m.text;
 function unframe(s) {
   const t = s.replace(/\0+$/, '');
+  if (/^#[a-z0-9]{4}\d~/.test(t)) return { id: t.slice(1, 5), hop: +t[5], lock: true, text: t.slice(7) };
   if (/^#[a-z0-9]{4}\d/.test(t)) return { id: t.slice(1, 5), hop: +t[5], text: t.slice(6) };
   return { id: 'x' + newId().slice(1), hop: 0, text: t };
 }
@@ -478,6 +592,7 @@ function setMode(m) {
   const [lo, hi] = MODES[m].view;
   $('axTop').textContent = hi / 1000 + 'k'; $('axMid').textContent = (lo + hi) / 2000 + 'k';
   if (!booting) light('OH', powered && m === 'call');
+  $('quietNote').hidden = m !== 'quiet';
   updateMeter();
 }
 $('modes').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
@@ -601,6 +716,8 @@ $('power').addEventListener('click', async () => {
   setMode(mode); renderTape();
   if (micOk) setListening(true); else $('listenLabel').textContent = 'No mic';
   readout('OK', micOk ? 'Ready. Listening for messages.' : 'Ready to send. Microphone is off, so you can’t hear messages.');
+  if (!micOk) micSheet('denied');
+  else if (!flag('fg-told')) { flag('fg-told', true); addSystemSlip('listening'); }
 });
 function powerOff() {
   powered = false; setListening(false);
@@ -628,9 +745,13 @@ $('listen').addEventListener('click', () => { setListening(!listening); if (list
 // ---------- transmit ----------
 async function transmit(m, label) {
   if (!powered || sending) return;
-  sending = true; updateMeter();
   seen.add(m.id);
-  const wave = encode(tx, frame(m), MODES[mode].proto);
+  return sendRaw(frame(m), label);
+}
+async function sendRaw(payload, label) {
+  if (!powered || sending) return;
+  sending = true; updateMeter();
+  const wave = encode(tx, payload, MODES[mode].proto);
   const buf = ctx.createBuffer(1, wave.length, ctx.sampleRate); buf.copyToChannel(wave, 0);
   const src = ctx.createBufferSource(); src.buffer = buf;
   src.connect(ctx.destination); src.connect(analyser);
@@ -648,9 +769,9 @@ async function transmit(m, label) {
 }
 $('tx').addEventListener('click', async () => {
   const text = $('msg').value.trim();
-  const m = { id: newId(), hop: 0, text, dir: 'out', mode, at: Date.now() };
+  const m = { id: newId(), hop: 0, text, dir: 'out', mode, at: Date.now(), lock: !!group };
   addToTape(m);
-  await transmit(m, 'Sending');
+  await transmit(m, group ? 'Sending, locked' : 'Sending');
 });
 
 // ---------- SOS: hold to send ----------
@@ -676,6 +797,7 @@ $('sos').addEventListener('contextmenu', (e) => e.preventDefault());
 
 // ---------- receive ----------
 function received(raw) {
+  if (raw.startsWith('#K')) return keyHeard(raw);
   const m = unframe(raw);
   blink('RD', 900);
   if (seen.has(m.id)) { readout('OK', 'Heard a message you already have.'); return; }
@@ -683,8 +805,9 @@ function received(raw) {
   const msg = { ...m, dir: 'in', mode, at: Date.now(), sos: /^SOS\b/.test(m.text) };
   flow('down', 1400);
   addToTape(msg);
-  readout('CONNECT', msg.sos ? 'SOS received' : `Message received${m.hop ? ` · hop ${m.hop}` : ''}`);
-  ghost(m.text);
+  const unreadable = msg.lock && !group;
+  readout('CONNECT', unreadable ? 'Locked message. You can pass it on.' : msg.sos ? 'SOS received' : `Message received${m.hop ? ` · hop ${m.hop}` : ''}`);
+  ghost(unreadable ? 'LOCKED MESSAGE' : m.text);
 }
 
 // ---------- tape: the thermal printer ----------
@@ -700,25 +823,39 @@ function renderTape() {
   $('more').hidden = extra <= 0;
   $('more').setAttribute('aria-expanded', expanded);
   $('more').innerHTML = expanded ? 'Show less <span class="chev" aria-hidden="true">▾</span>' : `See ${extra} more <span class="chev" aria-hidden="true">▾</span>`;
-  $('msgs').innerHTML = (expanded ? all : all.slice(0, PEEK)).map((m) => `
+  $('msgs').innerHTML = (expanded ? all : all.slice(0, PEEK)).map((m) => m.dir === 'sys' ? sysSlipHTML(m) : `
     <li class="slip ${m.sos ? 'sos-slip' : ''} ${m.id === printId ? 'printing' : ''}"><div class="paper">
-      ${m.sos ? '<div class="sosband">*** SOS ***</div>' : ''}
+      ${m.sos && !(m.lock && !group) ? '<div class="sosband">*** SOS ***</div>' : ''}
       <div class="slip-head">
         <span>${m.dir === 'in' ? 'Heard' : 'Sent'}</span>
         ${m.hop ? `<span class="hop">Hop ${m.hop}</span>` : ''}
+        ${m.lock ? `<span class="lock">${group ? 'Locked · ' + esc(group.name) : 'Locked'}</span>` : ''}
         <span>${esc(m.mode)}</span><span>${time(m.at)}</span>
         ${m.passed ? `<span>Passed on ×${m.passed}</span>` : ''}
       </div>
-      <p>${esc(m.text)}</p>
+      ${bodyHTML(m)}
       ${m.dir === 'in' ? `<button class="pass" data-id="${esc(m.id)}" ${powered ? '' : 'disabled'}>Pass it on → hop ${m.hop + 1}</button>` : ''}
     </div></li>`).join('');
   printId = null;
 }
+// message body by type: locked-unreadable, location, I'm safe, plain
+function bodyHTML(m) {
+  if (m.lock && !group) return `<p class="redacted">${'▒'.repeat(Math.min(48, Math.max(12, m.text.length)))}</p><p class="why">Locked with a group key you don’t have. You can still pass it on; only phones with the key can read it.</p>`;
+  const loc = m.text.match(/^📍\s*(-?\d+\.\d+),\s*(-?\d+\.\d+)\s*(.*)$/u);
+  if (loc) {
+    const [lat, lon] = [+loc[1], +loc[2]], rel = here ? relTo(here, { lat, lon }) : null;
+    return `<div class="stamp">LOCATION</div><p class="coords">${lat.toFixed(4)}, ${lon.toFixed(4)}</p>${loc[3] ? `<p>${esc(loc[3])}</p>` : ''}<div class="bearing">${rel ? `<span class="arrow" style="--deg:${rel.deg}deg"><i></i></span><span>${rel.text} of you</span>` : '<span>Open your maps app with these numbers. No internet needed for GPS.</span>'}</div>`;
+  }
+  const safe = m.text.match(/^✓\s*I’m safe\.?\s*(.*)$/u);
+  if (safe) return `<div class="stamp">I’M SAFE</div>${safe[1] ? `<p>${esc(safe[1])}</p>` : ''}`;
+  return `<p>${esc(m.text)}</p>`;
+}
 $('msgs').addEventListener('click', async (e) => {
+  const sa = e.target.closest('[data-sys]'); if (sa) return sysAction(sa.dataset.sys, sa.dataset.id);
   const b = e.target.closest('.pass'); if (!b || sending) return;
   const m = tape.find((x) => x.id === b.dataset.id); if (!m) return;
   m.passed = (m.passed || 0) + 1; save(); renderTape();
-  await transmit({ id: m.id, hop: m.hop + 1, text: m.text }, `Passing on · hop ${m.hop + 1}`);
+  await transmit({ id: m.id, hop: m.hop + 1, text: m.text, lock: m.lock }, `Passing on · hop ${m.hop + 1}`);
 });
 $('more').addEventListener('click', () => {
   expanded = !expanded; renderTape();
@@ -727,10 +864,10 @@ $('more').addEventListener('click', () => {
 $('clear').addEventListener('click', () => { tape = []; seen.clear(); save(); renderTape(); });
 
 // ---------- prototype: play a real transmission into the real decoder ----------
-async function playIncoming(text, hop) {
+async function playIncoming(text, hop, opts = {}) {
   if (!powered) { readout('ERROR', 'Switch the power on first.'); return; }
   if (!listening) setListening(true);
-  const wave = encode(tx, frame({ id: newId(), hop, text }), MODES[mode].proto);
+  const wave = encode(tx, opts.raw || frame({ id: newId(), hop, text, lock: opts.lock }), MODES[mode].proto);
   const buf = ctx.createBuffer(1, wave.length, ctx.sampleRate); buf.copyToChannel(wave, 0);
   const src = ctx.createBufferSource(); src.buffer = buf;
   src.connect(analyser); src.connect(proc); src.connect(ctx.destination);
@@ -741,13 +878,203 @@ $('simIn').addEventListener('click', () => playIncoming('Shelter C has power and
 $('simRelay').addEventListener('click', () => playIncoming('Road to Shelter B closed at the bridge. Use Elm St.', 2));
 $('simSos').addEventListener('click', () => playIncoming('SOS 2 people trapped, 41 Harbor Rd, 2nd floor', 1));
 
+// ================= new screens: onboarding, microphone, group key, install, update, quick messages =================
+const flag = (k, v) => { if (STATE) return v === undefined ? true : undefined; const key = 'dialtone-' + k; try { if (v === undefined) return localStorage.getItem(key) === '1'; localStorage.setItem(key, v ? '1' : '0'); } catch { return false; } };
+
+// ---- group key ----
+const WORDS = ['ECHO','LANTERN','BRIDGE','NINE','HARBOR','COMET','DELTA','MAPLE','RIVER','OTTER','FALCON','GRANITE','CEDAR','ORBIT','PEPPER','TUNDRA','VELVET','WILLOW','ZEPHYR','AMBER','BISON','CANYON','DUNE','EMBER','FJORD','GLACIER','HAZEL','IVORY','JUNIPER','KESTREL','LOTUS','MESA','NOVA','OASIS','PRAIRIE','QUARTZ','RAVEN','SIERRA','TIMBER','UMBER','VALLEY','WAVE','XENON','YARROW','ZINC','ARCH','BEACON','CIRRUS','DRUM','ELM','FLINT','GROVE','HAVEN','ISLE','JADE','KITE','LARK','MOSS','NORTH','OAK','PINE','QUILL','REEF','STONE'];
+const b64 = (u8) => btoa(String.fromCharCode(...u8));
+const unb64 = (s) => { try { return Uint8Array.from(atob(s), (c) => c.charCodeAt(0)); } catch { return new Uint8Array(4); } };
+const wordsFor = (key) => [...unb64(key).slice(0, 4)].map((b) => WORDS[b & 63]);
+const DEMO_GROUP = { name: 'SHELTER NET', key: 'q8F2b0Xr9Kp1LmN3sT5vWw==' };
+let group = null, awaitingKey = false, pendingKey = null;
+if (!STATE) { try { group = JSON.parse(localStorage.getItem('dialtone-group') || 'null'); } catch {} }
+function setGroup(g) { group = g; if (!STATE) { try { g ? localStorage.setItem('dialtone-group', JSON.stringify(g)) : localStorage.removeItem('dialtone-group'); } catch {} } renderKey(); renderTape(); }
+function renderKey() {
+  $('keyDisp').classList.toggle('locked', !!group);
+  $('keyName').textContent = group ? group.name : 'Open channel';
+  $('keySub').textContent = group ? 'Locked · ' + wordsFor(group.key).join(' ') : 'Anyone nearby can read';
+  $('shackle').setAttribute('d', group ? 'M8 11V7a4 4 0 0 1 8 0v4' : 'M8 11V7a4 4 0 0 1 7.5-2');
+  $('keyBtn').textContent = group ? 'Share' : 'Key';
+}
+$('keyBtn').addEventListener('click', () => keySheet());
+
+// ---- sheet ----
+let sheetCleanup = null;
+const head = (kicker, title) => `<p class="silk kicker">${kicker}</p><h2 id="sheetTitle">${title}</h2>`;
+function openSheet(html, onMount) {
+  if (sheetCleanup) { sheetCleanup(); sheetCleanup = null; }
+  $('sheetBody').innerHTML = html; $('sheet').hidden = false; $('scrim').hidden = false; document.body.classList.add('sheet-open');
+  if (onMount) sheetCleanup = onMount($('sheetBody')) || null;
+  if (!STATE) { const f = $('sheetBody').querySelector('[autofocus]') || $('sheetBody').querySelector('.btn.primary'); f && f.focus(); }
+}
+function closeSheet() { if (sheetCleanup) { sheetCleanup(); sheetCleanup = null; } $('sheet').hidden = true; $('scrim').hidden = true; document.body.classList.remove('sheet-open'); }
+$('scrim').addEventListener('click', closeSheet);
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('sheet').hidden) closeSheet(); });
+$('sheetBody').addEventListener('click', (e) => { const b = e.target.closest('[data-act]'); if (b && !b.disabled && ACT[b.dataset.act]) ACT[b.dataset.act](b); });
+
+// ---- illustrations (silkscreen on glass) ----
+const APPICON = `<div class="appicon" aria-hidden="true"><i style="top:13px;left:13px"></i><i style="top:13px;right:13px"></i><i style="bottom:13px;left:13px"></i><i style="bottom:13px;right:13px"></i><svg viewBox="0 0 44 44" fill="none" stroke-linecap="round"><path d="M5 23c3.5-9 7-9 10.5 0s7 9 10.5 0 7-9 10.5 0" stroke="#fff" stroke-opacity=".8" stroke-width="5"/><path d="M5 22c3.5-9 7-9 10.5 0s7 9 10.5 0 7-9 10.5 0" stroke="var(--emboss)" stroke-width="5"/></svg></div>`;
+const ILL = {
+  sound: `<div class="illus glass" aria-hidden="true"><svg viewBox="0 0 280 110" width="280" height="110" fill="none" stroke-linecap="round" stroke-linejoin="round"><g stroke="#7dffb2" stroke-opacity=".85" stroke-width="2"><rect x="24" y="18" width="42" height="74" rx="8"/><rect x="214" y="18" width="42" height="74" rx="8"/><path d="M40 84h10M230 84h10"/></g><path d="M80 55c5-16 9-16 14 0s9 16 14 0 9-16 14 0 9 16 14 0 9-16 14 0 9 16 14 0 9-16 14 0 9 16 14 0" stroke="#7dffb2" stroke-width="2.5" style="filter:drop-shadow(0 0 4px rgba(125,255,178,.7))"/><g fill="#a3a9a3" font-family="IBM Plex Mono, monospace" font-size="9" letter-spacing="1"><text x="45" y="106" text-anchor="middle">YOU</text><text x="235" y="106" text-anchor="middle">ANY PHONE</text></g></svg></div>`,
+  mic: `<div class="illus glass" aria-hidden="true"><svg viewBox="0 0 280 110" width="280" height="110" fill="none" stroke-linecap="round"><g stroke="#7dffb2" stroke-opacity=".9" stroke-width="2.2"><rect x="96" y="16" width="26" height="44" rx="13"/><path d="M86 46a23 23 0 0 0 46 0M109 69v12M97 82h24"/></g><circle cx="186" cy="38" r="7" fill="#5cff7a" style="filter:drop-shadow(0 0 6px #5cff7a)"/><text x="186" y="62" fill="#eef2ec" font-family="Barlow Condensed, sans-serif" font-weight="600" font-size="12" letter-spacing="2" text-anchor="middle">AA</text><text x="140" y="102" fill="#a3a9a3" font-family="IBM Plex Mono, monospace" font-size="9.5" letter-spacing="1.5" text-anchor="middle">SCREEN ON = LISTENING</text></svg></div>`,
+  install: `<div class="illus" aria-hidden="true">${APPICON}</div>`,
+};
+
+// ---- onboarding ----
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+let installEvt = null;
+function installSteps() {
+  if (isStandalone()) return `<p><strong>Already installed.</strong> Dial Tone opens with no internet.</p>`;
+  if (isIOS()) return `<p>Installed, Dial Tone opens with <strong>no internet at all</strong>. On iPhone:</p><ol><li>Tap <strong>Share</strong> in Safari’s toolbar.</li><li>Choose <strong>Add to Home Screen</strong>.</li><li>Open Dial Tone from the new icon.</li></ol>`;
+  return `<p>Installed, Dial Tone opens with <strong>no internet at all</strong>.</p>${installEvt ? '' : `<ol><li>Open the browser menu (⋮).</li><li>Choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li></ol>`}`;
+}
+const ONB = [
+  { k: 'Welcome · 1 / 3', t: 'Messages that travel as sound', ill: () => ILL.sound, body: () => `<p>Dial Tone turns short text into modem sound. Any phone that hears it decodes it: across a room, through a phone call, or in a voice note.</p><p><strong>No internet, no accounts, no servers.</strong></p>` },
+  { k: 'Welcome · 2 / 3', t: 'It listens only while open', ill: () => ILL.mic, body: () => `<p>Dial Tone uses the microphone to hear messages, <strong>only while this screen is on</strong>. Nothing is recorded, stored or sent anywhere.</p><p>Your phone asks for permission when you flip the power switch.</p>` },
+  { k: 'Welcome · 3 / 3', t: 'Install it before you need it', ill: () => ILL.install, body: installSteps },
+];
+function onboarding(i = 0) {
+  const p = ONB[i], last = i === ONB.length - 1;
+  const left = i ? `<button class="btn" data-act="onbBack" data-i="${i}">Back</button>` : `<button class="btn" data-act="onbDone">Skip</button>`;
+  const right = last ? (installEvt ? `<button class="btn primary" data-act="installNow">Install</button>` : `<button class="btn primary" data-act="onbDone">Got it</button>`) : `<button class="btn primary" data-act="onbNext" data-i="${i}">Next</button>`;
+  openSheet(`${head(p.k, p.t)}${p.ill()}${p.body()}<div class="btns">${last && installEvt ? `<button class="btn" data-act="onbDone">Later</button>` : left}${right}</div><div class="dots" aria-hidden="true">${ONB.map((_, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</div>`);
+}
+
+// ---- microphone help ----
+function micSheet(kind = 'denied') {
+  const reset = kind === 'reset';
+  openSheet(`${head('Microphone', reset ? 'Microphone access was reset' : 'Microphone is off')}
+    ${reset ? `<p>Your phone forgot the permission. iPhones do this after a while. Allow it again to keep hearing messages.</p>` : `<p>You can still <strong>send</strong>, but you won’t hear messages until the microphone is allowed.</p>`}
+    <p><strong>iPhone:</strong> tap <strong>aA</strong> in Safari’s address bar › Website Settings › Microphone › Allow.</p>
+    <p><strong>Android:</strong> tap the icon left of the address › Permissions › Microphone › Allow.</p>
+    <p class="silk" id="micMsg" style="min-height:11px"></p>
+    <div class="btns"><button class="btn" data-act="close">Send only</button><button class="btn primary" data-act="micRetry">Try again</button></div>`);
+}
+async function micRetry() {
+  if (!powered) { closeSheet(); $('power').click(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    mic = ctx.createMediaStreamSource(stream); mic.connect(analyser); mic.connect(proc);
+    $('listen').disabled = false; setListening(true); closeSheet(); readout('OK', 'Microphone on. Listening for messages.');
+  } catch { const m = $('micMsg'); if (m) m.textContent = 'Still blocked. Change the setting above, then try again.'; }
+}
+
+// ---- group key sheets ----
+function keySheet(view) {
+  view = view || (group ? 'share' : 'open');
+  const words = (g) => `<div class="words">${wordsFor(g.key).map((w) => `<b>${w}</b>`).join('')}</div>`;
+  if (view === 'open') openSheet(`${head('Group key', 'Lock your messages')}<p><strong>Right now the channel is open:</strong> anyone nearby can read what you send.</p><p>A group key locks messages so only phones with the key can read them. Phones without it can still pass them on.</p><div class="btns"><button class="btn" data-act="keyJoin">Join a group</button><button class="btn primary" data-act="keyCreate">Create group</button></div>`);
+  if (view === 'create') openSheet(`${head('Group key', 'Name your group')}<p>Pick a short name everyone will recognise. It’s printed on every locked slip.</p><div class="field"><input id="gname" maxlength="16" placeholder="SHELTER NET" autocomplete="off" autofocus aria-label="Group name"></div><div class="btns"><button class="btn" data-act="keyOpen">Back</button><button class="btn primary" data-act="keyMake">Create key</button></div>`);
+  if (view === 'share') openSheet(`${head('Group key', 'Share the key')}<div class="qrcard"><canvas id="qr" width="392" height="392" role="img" aria-label="Code containing the group key"></canvas><div class="gname">${esc(group.name)}</div></div><p style="margin-top:14px">Let the other phone scan this code, or play the key screech near it. <strong>Both phones must show these four words:</strong></p>${words(group)}<div class="btns"><button class="btn" data-act="close">Done</button><button class="btn primary" data-act="keyPlay" ${powered ? '' : 'disabled'}>Play key screech</button></div>${powered ? '' : '<p class="silk" style="text-align:center;margin-top:10px">Switch the power on to play the key screech</p>'}<button class="linkbtn" data-act="keyLeave">Leave this group</button>`, drawQR);
+  if (view === 'join') openSheet(`${head('Group key', 'Join a group')}<p>Get the key from someone already in the group. Either way, you’ll check four words before joining.</p><div class="btns"><button class="btn" data-act="keyScan">Scan code</button><button class="btn primary" data-act="keyListen">Listen for key</button></div><button class="linkbtn" data-act="keyOpen">Back</button>`);
+  if (view === 'scan') openSheet(`${head('Group key', 'Scan the code')}<div class="cam glass"><video id="camv" playsinline muted></video><div class="reticle"></div></div><p class="silk" id="scanMsg" style="text-align:center;margin-top:10px">Point the camera at the group code</p><div class="btns one"><button class="btn" data-act="keyJoin">Cancel</button></div>`, mountScanner);
+}
+function drawQR() {
+  const c = $('qr'); if (!c || !group) return; const g = c.getContext('2d');
+  g.fillStyle = '#fbfaf6'; g.fillRect(0, 0, c.width, c.height);
+  if (!window.qrcode) { g.fillStyle = '#55585c'; g.font = '24px IBM Plex Mono, monospace'; g.textAlign = 'center'; g.fillText('Code unavailable', 196, 200); return; }
+  const q = qrcode(0, 'M'); q.addData(`dialtone:key?n=${encodeURIComponent(group.name)}&k=${encodeURIComponent(group.key)}`); q.make();
+  const n = q.getModuleCount(), s = Math.floor(c.width / (n + 4)), off = Math.floor((c.width - s * n) / 2);
+  g.fillStyle = '#1d1e21';
+  for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) g.fillRect(off + k * s, off + r * s, s, s);
+}
+function mountScanner() {
+  let stream = null, t = null, stop = false;
+  const msg = (s) => { const m = $('scanMsg'); if (m) m.textContent = s; };
+  if (!('BarcodeDetector' in window)) { msg('This browser can’t scan codes. Use “Listen for key” instead.'); return; }
+  const det = new BarcodeDetector({ formats: ['qr_code'] });
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then((s) => {
+    stream = s; const v = $('camv'); v.srcObject = s; v.play();
+    const loop = async () => { if (stop) return; try { const hit = (await det.detect(v)).find((x) => x.rawValue.startsWith('dialtone:key')); if (hit) { const u = new URLSearchParams(hit.rawValue.split('?')[1]); return joinPrompt({ name: u.get('n'), key: u.get('k') }); } } catch {} t = setTimeout(loop, 250); };
+    loop();
+  }).catch(() => msg('Camera is blocked. Allow it, or use “Listen for key”.'));
+  return () => { stop = true; clearTimeout(t); stream && stream.getTracks().forEach((x) => x.stop()); };
+}
+function joinPrompt(g) {
+  pendingKey = g;
+  openSheet(`${head('Group key', `Join “${esc(g.name)}”?`)}<p>A phone nearby is offering this group’s key. <strong>Check these four words match the other phone</strong> before you join:</p><div class="words">${wordsFor(g.key).map((w) => `<b>${w}</b>`).join('')}</div><p>Once you join, what you send is locked to this group.</p><div class="btns"><button class="btn" data-act="keyIgnore">Ignore</button><button class="btn primary" data-act="keyAccept">Join group</button></div>`);
+}
+const keyFrame = (g) => '#K' + g.name + '|' + g.key;
+function keyHeard(raw) {
+  blink('RD', 900);
+  const [name, key] = raw.slice(2).replace(/\0+$/, '').split('|');
+  if (!name || !key) return;
+  if (group && group.key === key) { readout('OK', `Already in ${name}.`); return; }
+  awaitingKey = false; flow('down', 1400);
+  readout('CONNECT', `Key offered: ${name}`); ghost('KEY · ' + name);
+  joinPrompt({ name, key });
+}
+const ACT = {
+  close: closeSheet,
+  onbNext: (b) => onboarding(+b.dataset.i + 1), onbBack: (b) => onboarding(+b.dataset.i - 1),
+  onbDone: () => { flag('onboarded', true); closeSheet(); const p = $('power'); p.classList.remove('hint'); void p.offsetWidth; p.classList.add('hint'); readout('— — —', 'Flip the power switch to start'); },
+  micRetry,
+  keyOpen: () => keySheet('open'), keyCreate: () => keySheet('create'), keyJoin: () => keySheet('join'), keyScan: () => keySheet('scan'),
+  keyMake: () => { const name = ($('gname').value || '').trim().toUpperCase().slice(0, 16); if (!name) { $('gname').focus(); return; } setGroup({ name, key: b64(crypto.getRandomValues(new Uint8Array(16))) }); keySheet('share'); },
+  keyPlay: async () => { if (!group) return; closeSheet(); await sendRaw(keyFrame(group), `Key screech · ${group.name}`); readout('OK', 'Key sent. Check the four words on the other phone.'); },
+  keyLeave: () => { setGroup(null); keySheet('open'); readout('OK', 'Left the group. Messages are open again.'); },
+  keyListen: () => { closeSheet(); awaitingKey = true; if (!powered) readout('ERROR', 'Switch the power on, then listen for the key.'); else { if (!listening && !$('listen').disabled) setListening(true); readout('OK', 'Waiting for a key screech…'); } },
+  keyAccept: () => { if (pendingKey) setGroup(pendingKey); pendingKey = null; closeSheet(); readout('OK', `Joined ${group.name}. What you send is now locked.`); },
+  keyIgnore: () => { pendingKey = null; closeSheet(); },
+  installNow: async () => { if (!installEvt) return installSheet(); installEvt.prompt(); await installEvt.userChoice; installEvt = null; flag('onboarded', true); closeSheet(); renderInstall(); },
+};
+
+// ---- install ----
+addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; renderInstall(); });
+function renderInstall() { $('installNote').hidden = !!STATE || isStandalone(); }
+function installSheet() { openSheet(`${head('Install', 'Install Dial Tone')}${ILL.install}${installSteps()}<div class="btns${installEvt ? '' : ' one'}">${installEvt ? '<button class="btn" data-act="close">Later</button><button class="btn primary" data-act="installNow">Install</button>' : '<button class="btn primary" data-act="close">Got it</button>'}</div>`); }
+$('installBtn').addEventListener('click', () => (installEvt ? ACT.installNow() : installSheet()));
+
+// ---- system slips (printed notices) ----
+const SYS = {
+  listening: { title: 'Listening while open', text: 'Dial Tone hears messages only while this screen is on. Keep it open where messages may arrive.' },
+  update: { title: 'Update ready', text: 'A new version is ready. It won’t restart on its own, so no message gets cut off.', acts: [['later', 'Later'], ['restart', 'Restart now']] },
+};
+function addSystemSlip(kind) { addToTape({ id: 'y' + newId().slice(1), dir: 'sys', kind, at: Date.now() }); }
+function sysSlipHTML(m) {
+  const s = SYS[m.kind] || { title: 'Notice', text: '' };
+  return `<li class="slip sys ${m.id === printId ? 'printing' : ''}"><div class="paper"><div class="slip-head"><span>Dial Tone · ${esc(s.title)}</span><span>${time(m.at)}</span></div><p>${esc(s.text)}</p>${s.acts ? `<div class="sysacts">${s.acts.map(([a, l]) => `<button class="pass" data-sys="${a}" data-id="${m.id}">${l}</button>`).join('')}</div>` : ''}</div></li>`;
+}
+function sysAction(a, id) {
+  if (a === 'restart') { if (sending) { readout('ERROR', 'Wait until the message finishes.'); return; } location.reload(); }
+  if (a === 'later') { tape = tape.filter((x) => x.id !== id); save(); renderTape(); readout('OK', 'Update postponed. It installs next time Dial Tone opens.'); }
+}
+
+// ---- quick messages: I'm safe, location ----
+let here = null;
+function relTo(a, b) {
+  const R = 6371, rad = Math.PI / 180, dLat = (b.lat - a.lat) * rad, dLon = (b.lon - a.lon) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2, km = 2 * R * Math.asin(Math.sqrt(h));
+  const y = Math.sin(dLon) * Math.cos(b.lat * rad), x = Math.cos(a.lat * rad) * Math.sin(b.lat * rad) - Math.sin(a.lat * rad) * Math.cos(b.lat * rad) * Math.cos(dLon);
+  const deg = (Math.atan2(y, x) / rad + 360) % 360, dir = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(deg / 45) % 8];
+  return { deg: Math.round(deg), text: `${km < 1 ? Math.round(km * 1000) + ' m' : km.toFixed(1) + ' km'} ${dir}` };
+}
+$('safeBtn').addEventListener('click', () => { const note = $('msg').value.trim(); const keep = note && !/^[✓📍]/u.test(note) && note !== 'Water truck heading to Shelter B at 14:30'; $('msg').value = '✓ I’m safe.' + (keep ? ' ' + note : ''); updateMeter(); $('msg').focus(); });
+$('locBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) { readout('ERROR', 'This phone can’t share its location.'); return; }
+  readout('OK', 'Finding your position. GPS works without internet…');
+  navigator.geolocation.getCurrentPosition((p) => { here = { lat: p.coords.latitude, lon: p.coords.longitude }; $('msg').value = `📍 ${here.lat.toFixed(4)}, ${here.lon.toFixed(4)}`; updateMeter(); readout('OK', 'Location added. Add a note if you like, then Transmit.'); }, () => readout('ERROR', 'Location is blocked or unavailable.'), { enableHighAccuracy: true, timeout: 15000 });
+});
+
+// ---- prototype controls for the new screens ----
+$('simKey').addEventListener('click', () => playIncoming('', 0, { raw: keyFrame(DEMO_GROUP) }));
+$('simLocked').addEventListener('click', () => playIncoming('Meet at the north gate at 18:00. Bring the radio.', 1, { lock: true }));
+$('simUpdate').addEventListener('click', () => addSystemSlip('update'));
+$('showOnboarding').addEventListener('click', () => onboarding(0));
+$('showMic').addEventListener('click', () => micSheet('reset'));
+
+renderKey(); renderInstall();
+if (!STATE && !flag('onboarded')) onboarding(0);
+
 setMode('room'); renderTape(); updateMeter(); layoutTrace();
 
 // Figma capture helper: local dev only, and only when a capture is requested in the URL hash.
 if (location.hostname === 'localhost' && location.hash.includes('figmacapture=')) {
   const s = document.createElement('script'); s.src = 'https://mcp.figma.com/mcp/html-to-design/capture.js'; s.async = true; document.head.appendChild(s);
 }
-// ---------- design states: ?state=off|selftest|ready|sending|carrier|received|sos-hold|sos-received|call|quiet|too-long|mic-off|not-listening|tape-expanded|legend|beige ----------
+// ---------- design states: ?state=off|selftest|ready|sending|carrier|received|sos-hold|sos-received|call|quiet|too-long|mic-off|not-listening|tape-expanded|legend|beige|onboarding-1|onboarding-2|onboarding-3|first-power|mic-denied|mic-reset|key-open|key-create|key-share|key-join|key-offer|locked|locked-unreadable|quick-messages|install|install-note|update ----------
 if (STATE) applyState(STATE);
 function fft(re, im) {
   const n = re.length;
@@ -822,6 +1149,30 @@ function applyState(name) {
     'tape-expanded': () => { on(); setTape(5, true); setMode(mode); show('OK', 'Listening for messages.'); paintScope(); },
     'legend': () => { on(); setMode(mode); $('legend').hidden = false; show('OK', 'Ready. Listening for messages.'); paintScope(); },
     'beige': () => { setCase('beige'); S.received(); },
+    // new screens
+    'onboarding-1': () => { S.off(); onboarding(0); },
+    'onboarding-2': () => { S.off(); onboarding(1); },
+    'onboarding-3': () => { S.off(); onboarding(2); },
+    'first-power': () => { on(); tape = [{ id: 'y001', dir: 'sys', kind: 'listening', at: at(14, 0) }]; renderTape(); setMode(mode); show('OK', 'Ready. Listening for messages.'); paintScope(); },
+    'mic-denied': () => { S['mic-off'](); micSheet('denied'); },
+    'mic-reset': () => { S.ready(); micSheet('reset'); },
+    'key-open': () => { S.ready(); keySheet('open'); },
+    'key-create': () => { S.ready(); keySheet('create'); $('gname').value = 'SHELTER NET'; },
+    'key-share': () => { group = DEMO_GROUP; renderKey(); S.ready(); keySheet('share'); },
+    'key-join': () => { S.ready(); keySheet('join'); },
+    'key-offer': () => { on(); setMode(mode); light('RD', true); show('CONNECT', 'Key offered: SHELTER NET'); paintScope({ text: keyFrame(DEMO_GROUP).slice(1), tail: 25 }); joinPrompt(DEMO_GROUP); },
+    'locked': () => { group = DEMO_GROUP; renderKey(); on(); tape = [
+        { id: 'k001', hop: 0, text: 'Water truck heading to Shelter B at 14:30', dir: 'out', mode: 'room', at: at(14, 2), lock: true },
+        { id: 'k002', hop: 1, text: 'Meet at the north gate at 18:00. Bring the radio.', dir: 'in', mode: 'room', at: at(14, 9), lock: true }]; renderTape(); setMode(mode); light('RD', true); show('CONNECT', 'Message received · hop 1'); paintScope(); },
+    'locked-unreadable': () => { on(); tape = [
+        { id: 'k003', hop: 0, text: 'Shelter C has power and water. Room for 12 more.', dir: 'in', mode: 'room', at: at(14, 5) },
+        { id: 'k002', hop: 1, text: 'Meet at the north gate at 18:00. Bring the radio.', dir: 'in', mode: 'room', at: at(14, 9), lock: true }]; renderTape(); setMode(mode); light('RD', true); show('CONNECT', 'Locked message. You can pass it on.'); ghostText('LOCKED MESSAGE'); paintScope({ text: 'Meet at the north gate at 18:00.', tail: 25 }); },
+    'quick-messages': () => { on(); here = { lat: 6.4541, lon: 3.3947 }; tape = [
+        { id: 'q001', hop: 0, text: '✓ I’m safe. At Shelter C with 2 kids.', dir: 'in', mode: 'room', at: at(14, 12) },
+        { id: 'q002', hop: 1, text: '📍 6.4612, 3.4031 Water point, blue gate', dir: 'in', mode: 'call', at: at(14, 16) }]; renderTape(); $('msg').value = '✓ I’m safe.'; setMode(mode); updateMeter(); show('OK', 'Listening for messages.'); paintScope(); },
+    'install': () => { S.ready(); installSheet(); },
+    'install-note': () => { S.ready(); $('installNote').hidden = false; },
+    'update': () => { on(); setTape(1); tape.push({ id: 'y002', dir: 'sys', kind: 'update', at: at(14, 40) }); renderTape(); setMode(mode); show('OK', 'Ready. Listening for messages.'); paintScope(); },
   };
   (S[name] || S.off)();
   document.title = 'Dial Tone · ' + name;
