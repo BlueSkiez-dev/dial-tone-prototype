@@ -356,7 +356,7 @@ const device = $('device');
 function setCase(c) {
   device.dataset.case = c;
   document.querySelectorAll('#caseRow button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.case === c));
-  try { localStorage.setItem('dialtone-case', c); } catch {}
+  if (!new URLSearchParams(location.search).has('state')) { try { localStorage.setItem('dialtone-case', c); } catch {} }
 }
 $('caseRow').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setCase(b.dataset.case); });
 try { const c = localStorage.getItem('dialtone-case'); if (c === 'ghost' || c === 'beige') setCase(c); } catch {}
@@ -743,6 +743,10 @@ $('simSos').addEventListener('click', () => playIncoming('SOS 2 people trapped, 
 
 setMode('room'); renderTape(); updateMeter(); layoutTrace();
 
+// Figma capture helper: local dev only, and only when a capture is requested in the URL hash.
+if (location.hostname === 'localhost' && location.hash.includes('figmacapture=')) {
+  const s = document.createElement('script'); s.src = 'https://mcp.figma.com/mcp/html-to-design/capture.js'; s.async = true; document.head.appendChild(s);
+}
 // ---------- design states: ?state=off|selftest|ready|sending|carrier|received|sos-hold|sos-received|call|quiet|too-long|mic-off|not-listening|tape-expanded|legend|beige ----------
 if (STATE) applyState(STATE);
 function fft(re, im) {
